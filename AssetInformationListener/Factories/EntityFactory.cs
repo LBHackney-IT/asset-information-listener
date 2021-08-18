@@ -5,26 +5,67 @@ namespace AssetInformationListener.Factories
 {
     public static class EntityFactory
     {
-        public static DomainEntity ToDomain(this DbEntity databaseEntity)
+        public static Asset ToDomain(this AssetDb databaseEntity)
         {
-            return new DomainEntity
+            if (databaseEntity == null) return null;
+            return new Asset
             {
-                // TODO - Implement factory method fully
                 Id = databaseEntity.Id,
-                Name = databaseEntity.Name,
-                Description = databaseEntity.Description,
+                AssetId = databaseEntity.AssetId,
+                AssetType = databaseEntity.AssetType,
+                RootAsset = databaseEntity.RootAsset,
+                ParentAssetIds = databaseEntity.ParentAssetIds,
+                AssetLocation = databaseEntity.AssetLocation,
+                AssetAddress = databaseEntity.AssetAddress,
+                AssetManagement = databaseEntity.AssetManagement,
+                AssetCharacteristics = databaseEntity.AssetCharacteristics,
+                Tenure = databaseEntity.Tenure,
                 VersionNumber = databaseEntity.VersionNumber
             };
         }
 
-        public static DbEntity ToDatabase(this DomainEntity entity)
+        public static AssetTenure ToDomain(this AssetTenureDb databaseEntity)
         {
-            return new DbEntity
+            if (databaseEntity == null) return null;
+            return new AssetTenure
             {
-                Id = entity.Id,
-                Name = entity.Name,
-                Description = entity.Description,
-                VersionNumber = entity.VersionNumber
+                Id = databaseEntity.Id,
+                Type = databaseEntity.Type,
+                PaymentReference = databaseEntity.PaymentReference,
+                StartOfTenureDate = databaseEntity.StartOfTenureDate,
+                EndOfTenureDate = databaseEntity.EndOfTenureDate
+            };
+        }
+
+        public static AssetDb ToDatabase(this Asset domain)
+        {
+            if (domain == null) return null;
+            return new AssetDb
+            {
+                Id = domain.Id,
+                AssetId = domain.AssetId,
+                AssetType = domain.AssetType,
+                RootAsset = domain.RootAsset,
+                ParentAssetIds = domain.ParentAssetIds,
+                AssetLocation = domain.AssetLocation,
+                AssetAddress = domain.AssetAddress,
+                AssetManagement = domain.AssetManagement,
+                AssetCharacteristics = domain.AssetCharacteristics,
+                Tenure = domain.Tenure,
+                VersionNumber = domain.VersionNumber
+            };
+        }
+
+        public static AssetTenureDb ToDatabase(this AssetTenure domain)
+        {
+            if (domain == null) return null;
+            return new AssetTenureDb
+            {
+                Id = domain.Id,
+                Type = domain.Type,
+                PaymentReference = domain.PaymentReference,
+                StartOfTenureDate = domain.StartOfTenureDate,
+                EndOfTenureDate = domain.EndOfTenureDate
             };
         }
     }

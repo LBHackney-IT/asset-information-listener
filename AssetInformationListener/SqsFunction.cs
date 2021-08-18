@@ -42,9 +42,10 @@ namespace AssetInformationListener
             services.ConfigureDynamoDB();
 
             services.AddHttpClient();
-            services.AddScoped<IDoSomethingUseCase, DoSomethingUseCase>();
+            services.AddScoped<IUpdateAssetWithTenureDetails, UpdateAssetWithTenureDetails>();
 
-            services.AddScoped<IDbEntityGateway, DynamoDbEntityGateway>();
+            services.AddScoped<IAssetGateway, DynamoDbAssetGateway>();
+            services.AddScoped<ITenureInfoApiGateway, TenureInfoApiGateway>();
 
             base.ConfigureServices(services);
         }
@@ -86,12 +87,11 @@ namespace AssetInformationListener
                     IMessageProcessing processor = null;
                     switch (entityEvent.EventType)
                     {
-                        case EventTypes.DoSomethingEvent:
+                        case EventTypes.TenureCreatedEvent:
                             {
-                                processor = ServiceProvider.GetService<IDoSomethingUseCase>();
+                                processor = ServiceProvider.GetService<IUpdateAssetWithTenureDetails>();
                                 break;
                             }
-                        // TODO - Implement other message types here...
                         default:
                             throw new ArgumentException($"Unknown event type: {entityEvent.EventType} on message id: {message.MessageId}");
                     }

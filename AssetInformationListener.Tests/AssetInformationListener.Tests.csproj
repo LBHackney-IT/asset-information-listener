@@ -46,6 +46,5 @@
     
   <ItemGroup>
     <Folder Include="Factories\" />
-    <Folder Include="Infrastructure\" />
   </ItemGroup>
 </Project>
