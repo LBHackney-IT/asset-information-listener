@@ -37,78 +37,78 @@ terraform {
   }
 }
 
-### This is the parameter containing the arn of the topic to which we want to subscribe
-### This will have been created by the service the generates the events in which we are interested
-#
-# data "aws_ssm_parameter" "person_sns_topic_arn" {
-#   name = "/sns-topic/staging/person/arn"
-# }
+# This is the parameter containing the arn of the topic to which we want to subscribe
+# This will have been created by the service the generates the events in which we are interested
 
-### This is the definition of the dead letter queue used whem message processsing fails for a given message
-#
-# resource "aws_sqs_queue" "tenure_dead_letter_queue" {
-#   name                        = "tenuresdeadletterqueue.fifo"
-#   fifo_queue                  = true
-#   content_based_deduplication = true
-#   kms_master_key_id           = "alias/housing-staging-cmk"
-#   kms_data_key_reuse_period_seconds = 300
-# }
+data "aws_ssm_parameter" "tenure_sns_topic_arn" {
+  name = "/sns-topic/staging/tenure/arn"
+}
 
-### This is the queue  which will receive the events published to the topic listed above
-### This is what the listener lambda function will get triggered by.
-#
-# resource "aws_sqs_queue" "tenure_queue" {
-#   name                        = "tenuresqueue.fifo"
-#   fifo_queue                  = true
-#   content_based_deduplication = true
-#   kms_master_key_id           = "alias/housing-staging-cmk"
-#   kms_data_key_reuse_period_seconds = 300
-#   redrive_policy              = jsonencode({
-#     deadLetterTargetArn = aws_sqs_queue.tenure_dead_letter_queue.arn,
-#     maxReceiveCount     = 3
-#   })
-# }
+# This is the definition of the dead letter queue used whem message processsing fails for a given message
 
-### This is the AWS policy that allows the topic to forward an event to the queue declared above
-# 
-# resource "aws_sqs_queue_policy" "tenure_queue_policy" {
-#   queue_url = aws_sqs_queue.tenure_queue.id
-#   policy = <<POLICY
-#   {
-#       "Version": "2012-10-17",
-#       "Id": "sqspolicy",
-#       "Statement": [
-#       {
-#           "Sid": "First",
-#           "Effect": "Allow",
-#           "Principal": "*",
-#           "Action": "sqs:SendMessage",
-#           "Resource": "${aws_sqs_queue.tenure_queue.arn}",
-#           "Condition": {
-#           "ArnEquals": {
-#               "aws:SourceArn": "${data.aws_ssm_parameter.person_sns_topic_arn.value}"
-#           }
-#           }
-#       }
-#       ]
-#   }
-#   POLICY
-# }
+resource "aws_sqs_queue" "asset_dead_letter_queue" {
+  name                        = "assetdeadletterqueue.fifo"
+  fifo_queue                  = true
+  content_based_deduplication = true
+  kms_master_key_id           = "alias/housing-staging-cmk"
+  kms_data_key_reuse_period_seconds = 300
+}
 
-### This is the subscription definition that tells the topic which queue to use
-# 
-# resource "aws_sns_topic_subscription" "tenure_queue_subscribe_to_person_sns" {
-#   topic_arn = data.aws_ssm_parameter.person_sns_topic_arn.value
-#   protocol  = "sqs"
-#   endpoint  = aws_sqs_queue.tenure_queue.arn
-#   raw_message_delivery = true
-# }
+# This is the queue  which will receive the events published to the topic listed above
+# This is what the listener lambda function will get triggered by.
 
-### This creates an AWS parameter with arn of the queue that will then be used within the Serverless.yml
-### to specify the queue that will trigger the lambda function.
-# 
-# resource "aws_ssm_parameter" "tenures_sqs_queue_arn" {
-#   name  = "/sqs-queue/staging/tenures/arn"
-#   type  = "String"
-#   value = aws_sqs_queue.tenure_queue.arn
-# }
+resource "aws_sqs_queue" "asset_queue" {
+  name                        = "assetqueue.fifo"
+  fifo_queue                  = true
+  content_based_deduplication = true
+  kms_master_key_id           = "alias/housing-staging-cmk"           # This is a custom key
+  kms_data_key_reuse_period_seconds = 300
+  redrive_policy              = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.asset_dead_letter_queue.arn,
+    maxReceiveCount     = 3                                               # Messages that fail processing are retried twice before being moved to the dead letter queue
+  })
+}
+
+# This is the AWS policy that allows the topic to forward an event to the queue declared above
+
+resource "aws_sqs_queue_policy" "asset_queue_policy" {
+  queue_url = aws_sqs_queue.asset_queue.id
+  policy = <<POLICY
+  {
+      "Version": "2012-10-17",
+      "Id": "sqspolicy",
+      "Statement": [
+      {
+          "Sid": "First",
+          "Effect": "Allow",
+          "Principal": "*",
+          "Action": "sqs:SendMessage",
+          "Resource": "${aws_sqs_queue.asset_queue.arn}",
+          "Condition": {
+          "ArnEquals": {
+              "aws:SourceArn": "${data.aws_ssm_parameter.tenure_sns_topic_arn.value}"
+          }
+          }
+      }
+      ]
+  }
+  POLICY
+}
+
+# This is the subscription definition that tells the topic which queue to use
+
+resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_person_sns" {
+  topic_arn = data.aws_ssm_parameter.tenure_sns_topic_arn.value
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.asset_queue.arn
+  raw_message_delivery = true
+}
+
+# This creates an AWS parameter with arn of the queue that will then be used within the Serverless.yml
+# to specify the queue that will trigger the lambda function.
+
+resource "aws_ssm_parameter" "asset_sqs_queue_arn" {
+  name  = "/sqs-queue/staging/asset/arn"
+  type  = "String"
+  value = aws_sqs_queue.asset_queue.arn
+}

@@ -19,10 +19,13 @@ functions:
     name: ${self:service}-${self:provider.stage}
     handler: AssetInformationListener::AssetInformationListener.SqsFunction::FunctionHandler
     role: lambdaExecutionRole
+    environment:
+      TenureApiUrl: ${ssm:/housing-tl/${self:provider.stage}/tenure-api-url}
+      TenureApiToken: ${ssm:/housing-tl/${self:provider.stage}/tenure-api-token}
     events:
       ### Specify the parameter containing the queue arn used to trigget the lambda function here
       ### This will have been defined in the terraform configuration
-      # - sqs: ${ssm:/sqs-queue/${self:provider.stage}/tenures/arn} 
+      - sqs: ${ssm:/sqs-queue/${self:provider.stage}/asset/arn} 
       
 resources:
   Resources:
@@ -99,6 +102,12 @@ resources:
                           - Ref: 'AWS::Region'
                           - Ref: 'AWS::AccountId'
                           - 'table/Assets'
+                    - 'Fn::Join':
+                        - ':'
+                        - - 'arn:aws:dynamodb'
+                          - Ref: 'AWS::Region'
+                          - Ref: 'AWS::AccountId'
+                          - 'table/Assets/index/*'
           - PolicyName: sqsAccess
             PolicyDocument:
               Version: '2012-10-17'
