@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace AssetInformationListener.Gateway.Interfaces
 {
-    public interface IDbEntityGateway
+    public interface IAssetGateway
     {
-        Task<DomainEntity> GetEntityAsync(Guid id);
-        Task SaveEntityAsync(DomainEntity entity);
+        Task<Asset> GetAssetByIdAsync(Guid id);
+        Task SaveAssetAsync(Asset entity);
     }
 }

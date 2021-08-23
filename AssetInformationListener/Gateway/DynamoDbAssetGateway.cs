@@ -10,27 +10,27 @@ using System.Threading.Tasks;
 
 namespace AssetInformationListener.Gateway
 {
-    public class DynamoDbEntityGateway : IDbEntityGateway
+    public class DynamoDbAssetGateway : IAssetGateway
     {
         private readonly IDynamoDBContext _dynamoDbContext;
-        private readonly ILogger<DynamoDbEntityGateway> _logger;
+        private readonly ILogger<DynamoDbAssetGateway> _logger;
 
-        public DynamoDbEntityGateway(IDynamoDBContext dynamoDbContext, ILogger<DynamoDbEntityGateway> logger)
+        public DynamoDbAssetGateway(IDynamoDBContext dynamoDbContext, ILogger<DynamoDbAssetGateway> logger)
         {
             _logger = logger;
             _dynamoDbContext = dynamoDbContext;
         }
 
         [LogCall]
-        public async Task<DomainEntity> GetEntityAsync(Guid id)
+        public async Task<Asset> GetAssetByIdAsync(Guid id)
         {
             _logger.LogDebug($"Calling IDynamoDBContext.LoadAsync for id {id}");
-            var dbEntity = await _dynamoDbContext.LoadAsync<DbEntity>(id).ConfigureAwait(false);
+            var dbEntity = await _dynamoDbContext.LoadAsync<AssetDb>(id).ConfigureAwait(false);
             return dbEntity?.ToDomain();
         }
 
         [LogCall]
-        public async Task SaveEntityAsync(DomainEntity entity)
+        public async Task SaveAssetAsync(Asset entity)
         {
             _logger.LogDebug($"Calling IDynamoDBContext.SaveAsync for id {entity.Id}");
             await _dynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);

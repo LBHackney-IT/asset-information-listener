@@ -1,21 +1,20 @@
 using Amazon.DynamoDBv2.DataModel;
-using AutoFixture;
 using AssetInformationListener.Infrastructure;
+using AutoFixture;
 using System;
-using System.Linq;
 
 namespace AssetInformationListener.Tests.E2ETests.Fixtures
 {
-    public class EntityFixture : IDisposable
+    public class AssetFixture : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
 
         private readonly IDynamoDBContext _dbContext;
 
-        public DbEntity DbEntity { get; private set; }
-        public Guid DbEntityId { get; private set; }
+        public AssetDb DbAsset { get; private set; }
+        public Guid AssetDbId { get; private set; }
 
-        public EntityFixture(IDynamoDBContext dbContext)
+        public AssetFixture(IDynamoDBContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -31,36 +30,36 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
         {
             if (disposing && !_disposed)
             {
-                if (null != DbEntity)
-                    _dbContext.DeleteAsync<DbEntity>(DbEntity.Id).GetAwaiter().GetResult();
+                if (null != DbAsset)
+                    _dbContext.DeleteAsync<AssetDb>(DbAsset.Id).GetAwaiter().GetResult();
 
                 _disposed = true;
             }
         }
 
-        private DbEntity ConstructAndSaveEntity(Guid id)
+        private AssetDb ConstructAndSaveEntity(Guid id)
         {
-            var dbEntity = _fixture.Build<DbEntity>()
+            var dbEntity = _fixture.Build<AssetDb>()
                                  .With(x => x.Id, id)
                                  .With(x => x.VersionNumber, (int?) null)
                                  .Create();
 
-            _dbContext.SaveAsync<DbEntity>(dbEntity).GetAwaiter().GetResult();
+            _dbContext.SaveAsync<AssetDb>(dbEntity).GetAwaiter().GetResult();
             dbEntity.VersionNumber = 0;
             return dbEntity;
         }
 
-        public void GivenAnEntityAlreadyExists(Guid id)
+        public void GivenAnAssetExists(Guid id)
         {
-            if (null == DbEntity)
+            if (null == DbAsset)
             {
                 var tenure = ConstructAndSaveEntity(id);
-                DbEntity = tenure;
-                DbEntityId = tenure.Id;
+                DbAsset = tenure;
+                AssetDbId = tenure.Id;
             }
         }
 
-        public void GivenAnEntityDoesNotExist(Guid id)
+        public void GivenAnAssetDoesNotExist(Guid id)
         {
             // Nothing to do here
         }

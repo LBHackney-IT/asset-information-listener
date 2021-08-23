@@ -8,8 +8,6 @@ using Xunit;
 
 namespace AssetInformationListener.Tests
 {
-    // TODO - Alter if DynamoDb is not required
-
     public class AwsIntegrationTests
     {
         private readonly AwsMockApplicationFactory _factory;
@@ -18,7 +16,26 @@ namespace AssetInformationListener.Tests
         public IDynamoDBContext DynamoDbContext => _factory?.DynamoDbContext;
         private readonly List<TableDef> _tables = new List<TableDef>
         {
-            new TableDef { Name = "SomeTable", KeyName = "id", KeyType = ScalarAttributeType.S }
+            new TableDef
+            {
+                Name = "Assets",
+                KeyName = "id",
+                KeyType = ScalarAttributeType.S,
+                GlobalSecondaryIndexes = new List<GlobalSecondaryIndex>(new[]
+                {
+                    new GlobalSecondaryIndex
+                    {
+                        IndexName = "AssetParentsAndChilds",
+                        KeySchema = new List<KeySchemaElement>(new[]
+                        {
+                            new KeySchemaElement("rootAsset", KeyType.HASH),
+                            new KeySchemaElement("parentAssetIds", KeyType.RANGE)
+                        }),
+                        Projection = new Projection { ProjectionType = ProjectionType.ALL },
+                        ProvisionedThroughput = new ProvisionedThroughput(10 , 10)
+                    }
+                })
+            }
         };
 
         public AwsIntegrationTests()

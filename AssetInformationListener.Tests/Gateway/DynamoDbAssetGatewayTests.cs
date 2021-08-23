@@ -15,20 +15,20 @@ using Xunit;
 namespace AssetInformationListener.Tests.Gateway
 {
     [Collection("Aws collection")]
-    public class DynamoDbEntityGatewayTests : IDisposable
+    public class DynamoDbAssetGatewayTests : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
-        private readonly Mock<ILogger<DynamoDbEntityGateway>> _logger;
-        private readonly DynamoDbEntityGateway _classUnderTest;
+        private readonly Mock<ILogger<DynamoDbAssetGateway>> _logger;
+        private readonly DynamoDbAssetGateway _classUnderTest;
         private AwsIntegrationTests _dbTestFixture;
         private IDynamoDBContext DynamoDb => _dbTestFixture.DynamoDbContext;
         private readonly List<Action> _cleanup = new List<Action>();
 
-        public DynamoDbEntityGatewayTests(AwsIntegrationTests dbTestFixture)
+        public DynamoDbAssetGatewayTests(AwsIntegrationTests dbTestFixture)
         {
             _dbTestFixture = dbTestFixture;
-            _logger = new Mock<ILogger<DynamoDbEntityGateway>>();
-            _classUnderTest = new DynamoDbEntityGateway(DynamoDb, _logger.Object);
+            _logger = new Mock<ILogger<DynamoDbAssetGateway>>();
+            _classUnderTest = new DynamoDbAssetGateway(DynamoDb, _logger.Object);
         }
 
         public void Dispose()
@@ -55,27 +55,27 @@ namespace AssetInformationListener.Tests.Gateway
             }
         }
 
-        private async Task InsertDatatoDynamoDB(DomainEntity entity)
+        private async Task InsertDatatoDynamoDB(Asset entity)
         {
             await DynamoDb.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanup.Add(async () => await DynamoDb.DeleteAsync<DbEntity>(entity.Id).ConfigureAwait(false));
+            _cleanup.Add(async () => await DynamoDb.DeleteAsync<AssetDb>(entity.Id).ConfigureAwait(false));
         }
 
-        private DomainEntity ConstructDomainEntity()
+        private Asset ConstructAsset()
         {
-            var entity = _fixture.Build<DomainEntity>()
+            var entity = _fixture.Build<Asset>()
                                  .With(x => x.VersionNumber, (int?) null)
                                  .Create();
             return entity;
         }
 
         [Fact]
-        public async Task GetEntityAsyncTestReturnsRecord()
+        public async Task GetAssetByIdAsyncTestReturnsRecord()
         {
-            var domainEntity = ConstructDomainEntity();
+            var domainEntity = ConstructAsset();
             await InsertDatatoDynamoDB(domainEntity).ConfigureAwait(false);
 
-            var result = await _classUnderTest.GetEntityAsync(domainEntity.Id).ConfigureAwait(false);
+            var result = await _classUnderTest.GetAssetByIdAsync(domainEntity.Id).ConfigureAwait(false);
 
             result.Should().BeEquivalentTo(domainEntity, (e) => e.Excluding(y => y.VersionNumber));
             result.VersionNumber.Should().Be(0);
@@ -84,10 +84,10 @@ namespace AssetInformationListener.Tests.Gateway
         }
 
         [Fact]
-        public async Task GetEntityAsyncTestReturnsNullWhenNotFound()
+        public async Task GetAssetByIdAsyncTestReturnsNullWhenNotFound()
         {
             var id = Guid.NewGuid();
-            var result = await _classUnderTest.GetEntityAsync(id).ConfigureAwait(false);
+            var result = await _classUnderTest.GetAssetByIdAsync(id).ConfigureAwait(false);
 
             result.Should().BeNull();
 
@@ -95,17 +95,18 @@ namespace AssetInformationListener.Tests.Gateway
         }
 
         [Fact]
-        public async Task SaveEntityAsyncTestUpdatesDatabase()
+        public async Task SaveAssetAsyncTestUpdatesDatabase()
         {
-            var domainEntity = ConstructDomainEntity();
+            var domainEntity = ConstructAsset();
             await InsertDatatoDynamoDB(domainEntity).ConfigureAwait(false);
 
-            domainEntity.Name = "New name";
-            domainEntity.Description = "New description";
+            domainEntity.RootAsset = Guid.NewGuid().ToString();
+            domainEntity.Tenure = _fixture.Create<AssetTenure>();
+            domainEntity.AssetAddress = _fixture.Create<AssetAddress>();
             domainEntity.VersionNumber = 0;
-            await _classUnderTest.SaveEntityAsync(domainEntity).ConfigureAwait(false);
+            await _classUnderTest.SaveAssetAsync(domainEntity).ConfigureAwait(false);
 
-            var updatedInDB = await DynamoDb.LoadAsync<DbEntity>(domainEntity.Id).ConfigureAwait(false);
+            var updatedInDB = await DynamoDb.LoadAsync<AssetDb>(domainEntity.Id).ConfigureAwait(false);
             updatedInDB.ToDomain().Should().BeEquivalentTo(domainEntity, (e) => e.Excluding(y => y.VersionNumber));
             updatedInDB.VersionNumber.Should().Be(domainEntity.VersionNumber + 1);
 

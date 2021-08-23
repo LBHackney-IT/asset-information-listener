@@ -2,10 +2,12 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Amazon.Lambda.TestUtilities;
-using AutoFixture;
 using AssetInformationListener.Boundary;
+using AssetInformationListener.Domain;
+using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Infrastructure;
 using AssetInformationListener.Infrastructure.Exceptions;
+using AutoFixture;
 using FluentAssertions;
 using Moq;
 using System;
@@ -16,15 +18,15 @@ using Xunit;
 
 namespace AssetInformationListener.Tests.E2ETests.Steps
 {
-    public class DoSomethingUseCaseSteps : BaseSteps
+    public class TenureCreatedSteps : BaseSteps
     {
         private readonly Fixture _fixture = new Fixture();
         private Exception _lastException;
 
-        public DoSomethingUseCaseSteps()
+        public TenureCreatedSteps()
         { }
 
-        private SQSEvent.SQSMessage CreateMessage(Guid personId, string eventType = EventTypes.DoSomethingEvent)
+        private SQSEvent.SQSMessage CreateMessage(Guid personId, string eventType = EventTypes.TenureCreatedEvent)
         {
             var personSns = _fixture.Build<EntityEventSns>()
                                     .With(x => x.EntityId, personId)
@@ -59,22 +61,38 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
             _lastException = await Record.ExceptionAsync(func);
         }
 
-        public async Task ThenTheEntityIsUpdated(DbEntity beforeChange, IDynamoDBContext dbContext)
-        {
-            var entityInDb = await dbContext.LoadAsync<DbEntity>(beforeChange.Id);
-
-            entityInDb.Should().BeEquivalentTo(beforeChange,
-                config => config.Excluding(y => y.Description)
-                                .Excluding(z => z.VersionNumber));
-            entityInDb.Description.Should().Be("Updated");
-            entityInDb.VersionNumber.Should().Be(beforeChange.VersionNumber + 1);
-        }
-
-        public void ThenAnEntityNotFoundExceptionIsThrown(Guid id)
+        public void ThenATenureNotFoundExceptionIsThrown(Guid id)
         {
             _lastException.Should().NotBeNull();
-            _lastException.Should().BeOfType(typeof(EntityNotFoundException));
-            (_lastException as EntityNotFoundException).Id.Should().Be(id);
+            _lastException.Should().BeOfType(typeof(TenureNotFoundException));
+            (_lastException as TenureNotFoundException).Id.Should().Be(id);
+        }
+
+        public void ThenAnAssetNotFoundExceptionIsThrown(Guid id)
+        {
+            _lastException.Should().NotBeNull();
+            _lastException.Should().BeOfType(typeof(AssetNotFoundException));
+            (_lastException as AssetNotFoundException).Id.Should().Be(id);
+        }
+
+        public async Task ThenTheAssetIsUpdatedWithTheTenureInfo(AssetDb beforeChange, TenureResponseObject tenure, IDynamoDBContext dbContext)
+        {
+            var assetInDb = await dbContext.LoadAsync<AssetDb>(beforeChange.Id);
+
+            assetInDb.Should().BeEquivalentTo(beforeChange,
+                config => config.Excluding(y => y.Tenure)
+                                .Excluding(z => z.VersionNumber));
+
+            var expectedTenureInfo = new AssetTenure
+            {
+                Id = tenure.Id.ToString(),
+                PaymentReference = tenure.PaymentReference,
+                Type = tenure.TenureType.Description,
+                StartOfTenureDate = tenure.StartOfTenureDate,
+                EndOfTenureDate = tenure.EndOfTenureDate
+            };
+            assetInDb.Tenure.Should().BeEquivalentTo(expectedTenureInfo);
+            assetInDb.VersionNumber.Should().Be(beforeChange.VersionNumber + 1);
         }
     }
 }
