@@ -97,7 +97,7 @@ resource "aws_sqs_queue_policy" "asset_queue_policy" {
 
 # This is the subscription definition that tells the topic which queue to use
 
-resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_person_sns" {
+resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_tenure_sns" {
   topic_arn = data.aws_ssm_parameter.tenure_sns_topic_arn.value
   protocol  = "sqs"
   endpoint  = aws_sqs_queue.asset_queue.arn
