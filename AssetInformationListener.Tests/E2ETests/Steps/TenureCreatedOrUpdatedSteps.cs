@@ -18,12 +18,12 @@ using Xunit;
 
 namespace AssetInformationListener.Tests.E2ETests.Steps
 {
-    public class TenureCreatedSteps : BaseSteps
+    public class TenureCreatedOrUpdatedSteps : BaseSteps
     {
         private readonly Fixture _fixture = new Fixture();
         private Exception _lastException;
 
-        public TenureCreatedSteps()
+        public TenureCreatedOrUpdatedSteps()
         { }
 
         private SQSEvent.SQSMessage CreateMessage(Guid personId, string eventType = EventTypes.TenureCreatedEvent)
@@ -42,6 +42,10 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
 
         public async Task WhenTheFunctionIsTriggered(Guid id)
         {
+            await WhenTheFunctionIsTriggered(id, EventTypes.TenureCreatedEvent);
+        }
+        public async Task WhenTheFunctionIsTriggered(Guid id, string eventType)
+        {
             var mockLambdaLogger = new Mock<ILambdaLogger>();
             ILambdaContext lambdaContext = new TestLambdaContext()
             {
@@ -49,7 +53,7 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
             };
 
             var sqsEvent = _fixture.Build<SQSEvent>()
-                                   .With(x => x.Records, new List<SQSEvent.SQSMessage> { CreateMessage(id) })
+                                   .With(x => x.Records, new List<SQSEvent.SQSMessage> { CreateMessage(id, eventType) })
                                    .Create();
 
             Func<Task> func = async () =>
@@ -91,7 +95,8 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
                 StartOfTenureDate = tenure.StartOfTenureDate,
                 EndOfTenureDate = tenure.EndOfTenureDate
             };
-            assetInDb.Tenure.Should().BeEquivalentTo(expectedTenureInfo);
+            assetInDb.Tenure.Should().BeEquivalentTo(expectedTenureInfo,
+                config => config.Excluding(y => y.IsActive));
             assetInDb.VersionNumber.Should().Be(beforeChange.VersionNumber + 1);
         }
     }

@@ -1,6 +1,7 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using AssetInformationListener.Boundary;
+using AssetInformationListener.Factories;
 using AssetInformationListener.Gateway;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.UseCase;
@@ -84,19 +85,12 @@ namespace AssetInformationListener
             {
                 try
                 {
-                    IMessageProcessing processor = null;
-                    switch (entityEvent.EventType)
-                    {
-                        case EventTypes.TenureCreatedEvent:
-                            {
-                                processor = ServiceProvider.GetService<IUpdateAssetWithTenureDetails>();
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException($"Unknown event type: {entityEvent.EventType} on message id: {message.MessageId}");
-                    }
-
-                    await processor.ProcessMessageAsync(entityEvent).ConfigureAwait(false);
+                    IMessageProcessing processor = entityEvent.CreateUseCaseForMessage(ServiceProvider);
+                    if (processor != null)
+                        await processor.ProcessMessageAsync(entityEvent).ConfigureAwait(false);
+                    else
+                        Logger.LogInformation($"No processors available for message so it will be ignored. " +
+                            $"Message id: {message.MessageId}; type: {entityEvent.EventType}; version: {entityEvent.Version}; entity id: {entityEvent.EntityId}");
                 }
                 catch (Exception ex)
                 {

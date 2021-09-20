@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Infrastructure;
 using AutoFixture;
 using System;
@@ -8,6 +9,7 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
     public class AssetFixture : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
+        private const string DateFormat = "yyyy-MM-ddTHH\\:mm\\:ss.fffffffZ";
 
         private readonly IDynamoDBContext _dbContext;
 
@@ -37,25 +39,53 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
             }
         }
 
-        private AssetDb ConstructAndSaveEntity(Guid id)
+        private AssetDb ConstructAndSaveAssetDb(Guid id)
         {
-            var dbEntity = _fixture.Build<AssetDb>()
-                                 .With(x => x.Id, id)
-                                 .With(x => x.VersionNumber, (int?) null)
-                                 .Create();
+            var dbEntity = ConstructAssetDb(id);
+            return SaveAssetDb(dbEntity);
+        }
 
+        private AssetDb SaveAssetDb(AssetDb dbEntity)
+        {
             _dbContext.SaveAsync<AssetDb>(dbEntity).GetAwaiter().GetResult();
             dbEntity.VersionNumber = 0;
             return dbEntity;
+        }
+
+        private AssetDb ConstructAssetDb(Guid id)
+        {
+            return _fixture.Build<AssetDb>()
+                                 .With(x => x.Id, id)
+                                 .With(x => x.VersionNumber, (int?) null)
+                                 .Create();
         }
 
         public void GivenAnAssetExists(Guid id)
         {
             if (null == DbAsset)
             {
-                var tenure = ConstructAndSaveEntity(id);
-                DbAsset = tenure;
-                AssetDbId = tenure.Id;
+                var asset = ConstructAndSaveAssetDb(id);
+                DbAsset = asset;
+                AssetDbId = asset.Id;
+            }
+        }
+
+        public void GivenAnAssetExistsWithTenureInfo(TenureResponseObject tenure)
+        {
+            if (null == DbAsset)
+            {
+                var asset = ConstructAssetDb(tenure.TenuredAsset.Id);
+                asset.Tenure = new AssetTenureDb()
+                {
+                    Id = tenure.Id.ToString(),
+                    EndOfTenureDate = null,
+                    PaymentReference = "something",
+                    StartOfTenureDate = DateTime.UtcNow.AddYears(-2),
+                    Type = tenure.TenureType.Description
+                };
+                asset = SaveAssetDb(asset);
+                DbAsset = asset;
+                AssetDbId = asset.Id;
             }
         }
 
