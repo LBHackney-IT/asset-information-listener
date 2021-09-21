@@ -35,8 +35,8 @@ namespace AssetInformationListener.Infrastructure
         [DynamoDBProperty(Converter = typeof(DynamoDbObjectConverter<AssetCharacteristics>))]
         public AssetCharacteristics AssetCharacteristics { get; set; }
 
-        [DynamoDBProperty(Converter = typeof(DynamoDbObjectConverter<AssetTenure>))]
-        public AssetTenure Tenure { get; set; }
+        [DynamoDBProperty(Converter = typeof(DynamoDbObjectConverter<AssetTenureDb>))]
+        public AssetTenureDb Tenure { get; set; }
 
         [DynamoDBVersion]
         public int? VersionNumber { get; set; }

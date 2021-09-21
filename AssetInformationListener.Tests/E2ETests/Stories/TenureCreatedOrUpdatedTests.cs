@@ -11,22 +11,22 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         IWant = "a function to process the TenureCreated message",
         SoThat = "the asset is updated with correct details fromn the new tenure")]
     [Collection("Aws collection")]
-    public class TenureCreatedTests : IDisposable
+    public class TenureCreatedOrUpdatedTests : IDisposable
     {
         private readonly AwsIntegrationTests _dbFixture;
         private readonly AssetFixture _assetFixture;
         private readonly TenureApiFixture _tenureApiFixture;
 
-        private readonly TenureCreatedSteps _steps;
+        private readonly TenureCreatedOrUpdatedSteps _steps;
 
-        public TenureCreatedTests(AwsIntegrationTests dbFixture)
+        public TenureCreatedOrUpdatedTests(AwsIntegrationTests dbFixture)
         {
             _dbFixture = dbFixture;
 
             _assetFixture = new AssetFixture(_dbFixture.DynamoDbContext);
             _tenureApiFixture = new TenureApiFixture();
 
-            _steps = new TenureCreatedSteps();
+            _steps = new TenureCreatedOrUpdatedSteps();
         }
 
         public void Dispose()
@@ -69,12 +69,24 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         }
 
         [Fact]
-        public void ListenerUpdatesTheAsset()
+        public void ListenerAddsTenureInfoToTheAsset()
         {
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
                 .And(h => _assetFixture.GivenAnAssetExists(TenureApiFixture.TenureResponse.TenuredAsset.Id))
-                .When(w => _steps.WhenTheFunctionIsTriggered(tenureId))
+                .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureCreatedEvent))
+                .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
+                                                                         TenureResponse, _dbFixture.DynamoDbContext))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void ListenerUpdatesTheTenureInfoOnTheAsset()
+        {
+            var tenureId = Guid.NewGuid();
+            this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
+                .And(h => _assetFixture.GivenAnAssetExistsWithTenureInfo(TenureApiFixture.TenureResponse))
+                .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureUpdatedEvent))
                 .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
                                                                          TenureResponse, _dbFixture.DynamoDbContext))
                 .BDDfy();

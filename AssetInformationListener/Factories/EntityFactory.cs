@@ -19,7 +19,7 @@ namespace AssetInformationListener.Factories
                 AssetAddress = databaseEntity.AssetAddress,
                 AssetManagement = databaseEntity.AssetManagement,
                 AssetCharacteristics = databaseEntity.AssetCharacteristics,
-                Tenure = databaseEntity.Tenure,
+                Tenure = databaseEntity.Tenure.ToDomain(),
                 VersionNumber = databaseEntity.VersionNumber
             };
         }
@@ -51,7 +51,7 @@ namespace AssetInformationListener.Factories
                 AssetAddress = domain.AssetAddress,
                 AssetManagement = domain.AssetManagement,
                 AssetCharacteristics = domain.AssetCharacteristics,
-                Tenure = domain.Tenure,
+                Tenure = domain.Tenure.ToDatabase(),
                 VersionNumber = domain.VersionNumber
             };
         }
