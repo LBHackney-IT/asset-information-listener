@@ -20,6 +20,8 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
         public static string TenureApiRoute => "http://localhost:5678/api/v1/";
         public static string TenureApiToken => "sdjkhfgsdkjfgsdjfgh";
 
+        public string ReceivedCorrelationId { get; private set; }
+
         public TenureApiFixture()
         {
             _jsonOptions = CreateJsonOptions();
@@ -60,6 +62,8 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
         {
             Environment.SetEnvironmentVariable("TenureApiUrl", TenureApiRoute);
             Environment.SetEnvironmentVariable("TenureApiToken", TenureApiToken);
+            ReceivedCorrelationId = null;
+
             Task.Run(() =>
             {
                 _httpListener = new HttpListener();
@@ -76,6 +80,8 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
                 }
                 else
                 {
+                    ReceivedCorrelationId = context.Request.Headers["x-correlation-id"];
+
                     response.StatusCode = (int) ((TenureResponse is null) ? HttpStatusCode.NotFound : HttpStatusCode.OK);
                     string responseBody = string.Empty;
                     if (TenureResponse is null)
