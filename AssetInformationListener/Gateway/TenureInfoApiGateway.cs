@@ -49,11 +49,12 @@ namespace AssetInformationListener.Gateway
         }
 
         [LogCall]
-        public async Task<TenureResponseObject> GetTenureInfoByIdAsync(Guid id)
+        public async Task<TenureResponseObject> GetTenureInfoByIdAsync(Guid id, Guid correlationId)
         {
             var client = _httpClientFactory.CreateClient();
             var getTenureRoute = $"{_getTenureApiRoute}/tenures/{id}";
 
+            client.DefaultRequestHeaders.Add("x-correlation-id", correlationId.ToString());
             client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(_getTenureApiToken);
             var response = await client.GetAsync(new Uri(getTenureRoute))
                                        .ConfigureAwait(false);
