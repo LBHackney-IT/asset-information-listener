@@ -22,6 +22,7 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
     {
         private readonly Fixture _fixture = new Fixture();
         private Exception _lastException;
+        private static readonly Guid _correlationId = Guid.NewGuid();
 
         public TenureCreatedOrUpdatedSteps()
         { }
@@ -31,6 +32,7 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
             var personSns = _fixture.Build<EntityEventSns>()
                                     .With(x => x.EntityId, personId)
                                     .With(x => x.EventType, eventType)
+                                    .With(x => x.CorrelationId , _correlationId)
                                     .Create();
 
             var msgBody = JsonSerializer.Serialize(personSns, _jsonOptions);
@@ -63,6 +65,11 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
             };
 
             _lastException = await Record.ExceptionAsync(func);
+        }
+
+        public void ThenTheCorrleationIdWasUsedInTheApiCall(string receivedCorrelationId)
+        {
+            receivedCorrelationId.Should().Be(_correlationId.ToString());
         }
 
         public void ThenATenureNotFoundExceptionIsThrown(Guid id)
