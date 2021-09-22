@@ -32,7 +32,7 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
             var personSns = _fixture.Build<EntityEventSns>()
                                     .With(x => x.EntityId, personId)
                                     .With(x => x.EventType, eventType)
-                                    .With(x => x.CorrelationId , _correlationId)
+                                    .With(x => x.CorrelationId, _correlationId)
                                     .Create();
 
             var msgBody = JsonSerializer.Serialize(personSns, _jsonOptions);
