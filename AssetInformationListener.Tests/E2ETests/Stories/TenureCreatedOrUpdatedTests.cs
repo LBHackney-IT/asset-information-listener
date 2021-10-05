@@ -53,6 +53,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureDoesNotExist(tenureId))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId))
+                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
                 .Then(t => _steps.ThenATenureNotFoundExceptionIsThrown(tenureId))
                 .BDDfy();
         }
@@ -64,6 +65,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
                 .And(h => _assetFixture.GivenAnAssetDoesNotExist(TenureApiFixture.TenureResponse.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId))
+                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
                 .Then(t => _steps.ThenAnAssetNotFoundExceptionIsThrown(TenureApiFixture.TenureResponse.TenuredAsset.Id))
                 .BDDfy();
         }
@@ -75,6 +77,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
                 .And(h => _assetFixture.GivenAnAssetExists(TenureApiFixture.TenureResponse.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureCreatedEvent))
+                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
                 .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
                                                                          TenureResponse, _dbFixture.DynamoDbContext))
                 .BDDfy();
@@ -87,6 +90,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
                 .And(h => _assetFixture.GivenAnAssetExistsWithTenureInfo(TenureApiFixture.TenureResponse))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureUpdatedEvent))
+                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
                 .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
                                                                          TenureResponse, _dbFixture.DynamoDbContext))
                 .BDDfy();
