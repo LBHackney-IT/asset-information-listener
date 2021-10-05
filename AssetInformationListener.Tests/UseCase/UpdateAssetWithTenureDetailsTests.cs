@@ -25,6 +25,7 @@ namespace AssetInformationListener.Tests.UseCase
         private readonly Asset _asset;
 
         private readonly Fixture _fixture;
+        private static readonly Guid _correlationId = Guid.NewGuid();
 
         public UpdateAssetWithTenureDetailsTests()
         {
@@ -43,6 +44,7 @@ namespace AssetInformationListener.Tests.UseCase
         {
             return _fixture.Build<EntityEventSns>()
                            .With(x => x.EventType, eventType)
+                           .With(x => x.CorrelationId, _correlationId)
                            .Create();
         }
 
@@ -71,7 +73,7 @@ namespace AssetInformationListener.Tests.UseCase
         public void ProcessMessageAsyncTestGetTenureExceptionThrown()
         {
             var exMsg = "This is an error";
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ThrowsAsync(new Exception(exMsg));
 
             Func<Task> func = async () => await _sut.ProcessMessageAsync(_message).ConfigureAwait(false);
@@ -81,7 +83,7 @@ namespace AssetInformationListener.Tests.UseCase
         [Fact]
         public void ProcessMessageAsyncTestGetTenureReturnsNullThrows()
         {
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ReturnsAsync((TenureResponseObject) null);
 
             Func<Task> func = async () => await _sut.ProcessMessageAsync(_message).ConfigureAwait(false);
@@ -92,7 +94,7 @@ namespace AssetInformationListener.Tests.UseCase
         public void ProcessMessageAsyncTestGetAssetExceptionThrows()
         {
             var exMsg = "This is an new error";
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ReturnsAsync(_tenure);
             _mockGateway.Setup(x => x.GetAssetByIdAsync(_tenure.TenuredAsset.Id))
                         .ThrowsAsync(new Exception(exMsg));
@@ -104,7 +106,7 @@ namespace AssetInformationListener.Tests.UseCase
         [Fact]
         public void ProcessMessageAsyncTestGetAssetReturnsNullExceptionThrows()
         {
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ReturnsAsync(_tenure);
             _mockGateway.Setup(x => x.GetAssetByIdAsync(_tenure.TenuredAsset.Id))
                         .ReturnsAsync((Asset) null);
@@ -117,7 +119,7 @@ namespace AssetInformationListener.Tests.UseCase
         public void ProcessMessageAsyncTestUpdateAssetExceptionThrows()
         {
             var exMsg = "This is the last error";
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ReturnsAsync(_tenure);
             _mockGateway.Setup(x => x.GetAssetByIdAsync(_tenure.TenuredAsset.Id))
                         .ReturnsAsync(_asset);
@@ -131,7 +133,7 @@ namespace AssetInformationListener.Tests.UseCase
         [Fact]
         public async Task ProcessMessageAsyncTestSuccess()
         {
-            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId))
+            _mockTenureApi.Setup(x => x.GetTenureInfoByIdAsync(_message.EntityId, _message.CorrelationId))
                                        .ReturnsAsync(_tenure);
             _mockGateway.Setup(x => x.GetAssetByIdAsync(_tenure.TenuredAsset.Id))
                         .ReturnsAsync(_asset);
