@@ -1,18 +1,11 @@
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.Lambda.Core;
-using Amazon.Lambda.SQSEvents;
-using Amazon.Lambda.TestUtilities;
 using AssetInformationListener.Domain;
 using AssetInformationListener.Infrastructure;
 using AssetInformationListener.Infrastructure.Exceptions;
-using AutoFixture;
 using FluentAssertions;
 using Hackney.Shared.Tenure.Boundary.Response;
-using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace AssetInformationListener.Tests.E2ETests.Steps
 {
@@ -29,28 +22,8 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
         }
         public async Task WhenTheFunctionIsTriggered(Guid id, string eventType)
         {
-            var mockLambdaLogger = new Mock<ILambdaLogger>();
-            ILambdaContext lambdaContext = new TestLambdaContext()
-            {
-                Logger = mockLambdaLogger.Object
-            };
-
-            var sqsEvent = _fixture.Build<SQSEvent>()
-                                   .With(x => x.Records, new List<SQSEvent.SQSMessage> { CreateMessage(id, eventType) })
-                                   .Create();
-
-            Func<Task> func = async () =>
-            {
-                var fn = new SqsFunction();
-                await fn.FunctionHandler(sqsEvent, lambdaContext).ConfigureAwait(false);
-            };
-
-            _lastException = await Record.ExceptionAsync(func);
-        }
-
-        public void ThenTheCorrleationIdWasUsedInTheApiCall(string receivedCorrelationId)
-        {
-            receivedCorrelationId.Should().Be(_correlationId.ToString());
+            var msg = CreateMessage(id, eventType);
+            await TriggerFunction(msg).ConfigureAwait(false);
         }
 
         public void ThenATenureNotFoundExceptionIsThrown(Guid id)

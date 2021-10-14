@@ -1,10 +1,8 @@
 using AssetInformationListener.Tests.E2ETests.Fixtures;
 using AssetInformationListener.Tests.E2ETests.Steps;
 using System;
-using System.Linq;
 using TestStack.BDDfy;
 using Xunit;
-
 
 namespace AssetInformationListener.Tests.E2ETests.Stories
 {
@@ -58,10 +56,10 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             var accountId = Guid.NewGuid();
             this.Given(g => _accountApiFixture.GivenTheAccountExists(accountId))
                 .And(h => _tenureApiFixture.GivenTheTenureExists(_accountApiFixture.ResponseObject.TargetId))
-                .And(i => _assetFixture.GivenAnAssetExists(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .And(i => _assetFixture.GivenAnAssetExists(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(accountId))
                 .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_accountApiFixture.ReceivedCorrelationIds))
-                //.Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
                 .Then(t => _steps.ThenTheAssetIsUpdated(_assetFixture.DbAsset, _accountApiFixture.ResponseObject,
                                                         _dbFixture.DynamoDbContext))
                 .BDDfy();
@@ -86,7 +84,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
                 .And(h => _tenureApiFixture.GivenTheTenureDoesNotExist(_accountApiFixture.ResponseObject.TargetId))
                 .When(w => _steps.WhenTheFunctionIsTriggered(accountId))
                 .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_accountApiFixture.ReceivedCorrelationIds))
-                //.Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
                 .Then(t => _steps.ThenATenureNotFoundExceptionIsThrown(_accountApiFixture.ResponseObject.TargetId))
                 .BDDfy();
         }
@@ -97,11 +95,11 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             var accountId = Guid.NewGuid();
             this.Given(g => _accountApiFixture.GivenTheAccountExists(accountId))
                 .And(h => _tenureApiFixture.GivenTheTenureExists(_accountApiFixture.ResponseObject.TargetId))
-                .And(h => _assetFixture.GivenAnAssetDoesNotExist(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .And(h => _assetFixture.GivenAnAssetDoesNotExist(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(accountId))
                 .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_accountApiFixture.ReceivedCorrelationIds))
-                //.Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
-                .Then(t => _steps.ThenAnAssetNotFoundExceptionIsThrown(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenAnAssetNotFoundExceptionIsThrown(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .BDDfy();
         }
     }
