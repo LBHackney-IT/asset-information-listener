@@ -1,5 +1,5 @@
-using AssetInformationListener.Domain.Tenure;
 using AutoFixture;
+using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 using System.IO;
 using System.Linq;

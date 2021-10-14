@@ -1,7 +1,7 @@
 using Amazon.DynamoDBv2.DataModel;
-using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Infrastructure;
 using AutoFixture;
+using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 
 namespace AssetInformationListener.Tests.E2ETests.Fixtures

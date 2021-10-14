@@ -2,17 +2,15 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Amazon.Lambda.TestUtilities;
-using AssetInformationListener.Boundary;
 using AssetInformationListener.Domain;
-using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Infrastructure;
 using AssetInformationListener.Infrastructure.Exceptions;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Shared.Tenure.Boundary.Response;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,26 +18,9 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
 {
     public class TenureCreatedOrUpdatedSteps : BaseSteps
     {
-        private readonly Fixture _fixture = new Fixture();
-        private Exception _lastException;
-        private static readonly Guid _correlationId = Guid.NewGuid();
-
         public TenureCreatedOrUpdatedSteps()
-        { }
-
-        private SQSEvent.SQSMessage CreateMessage(Guid personId, string eventType = EventTypes.TenureCreatedEvent)
         {
-            var personSns = _fixture.Build<EntityEventSns>()
-                                    .With(x => x.EntityId, personId)
-                                    .With(x => x.EventType, eventType)
-                                    .With(x => x.CorrelationId, _correlationId)
-                                    .Create();
-
-            var msgBody = JsonSerializer.Serialize(personSns, _jsonOptions);
-            return _fixture.Build<SQSEvent.SQSMessage>()
-                           .With(x => x.Body, msgBody)
-                           .With(x => x.MessageAttributes, new Dictionary<string, SQSEvent.MessageAttribute>())
-                           .Create();
+            _eventType = EventTypes.TenureCreatedEvent;
         }
 
         public async Task WhenTheFunctionIsTriggered(Guid id)
@@ -75,15 +56,15 @@ namespace AssetInformationListener.Tests.E2ETests.Steps
         public void ThenATenureNotFoundExceptionIsThrown(Guid id)
         {
             _lastException.Should().NotBeNull();
-            _lastException.Should().BeOfType(typeof(TenureNotFoundException));
-            (_lastException as TenureNotFoundException).Id.Should().Be(id);
+            _lastException.Should().BeOfType(typeof(EntityNotFoundException<TenureResponseObject>));
+            (_lastException as EntityNotFoundException<TenureResponseObject>).Id.Should().Be(id);
         }
 
         public void ThenAnAssetNotFoundExceptionIsThrown(Guid id)
         {
             _lastException.Should().NotBeNull();
-            _lastException.Should().BeOfType(typeof(AssetNotFoundException));
-            (_lastException as AssetNotFoundException).Id.Should().Be(id);
+            _lastException.Should().BeOfType(typeof(EntityNotFoundException<Asset>));
+            (_lastException as EntityNotFoundException<Asset>).Id.Should().Be(id);
         }
 
         public async Task ThenTheAssetIsUpdatedWithTheTenureInfo(AssetDb beforeChange, TenureResponseObject tenure, IDynamoDBContext dbContext)

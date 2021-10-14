@@ -1,8 +1,8 @@
-using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Gateway;
 using AssetInformationListener.Infrastructure.Exceptions;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Shared.Tenure.Boundary.Response;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;

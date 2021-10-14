@@ -1,4 +1,4 @@
-using AssetInformationListener.Boundary;
+using Hackney.Core.Sns;
 using System.Threading.Tasks;
 
 namespace AssetInformationListener.UseCase.Interfaces
