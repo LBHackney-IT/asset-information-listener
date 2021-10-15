@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace AssetInformationListener.Tests.E2ETests.Steps
 {
-    public class AccountCreatedUseCaseSteps : BaseSteps
+    public class AccountCreatedSteps : BaseSteps
     {
-        public AccountCreatedUseCaseSteps()
+        public AccountCreatedSteps()
         {
             _eventType = EventTypes.AccountCreatedEvent;
         }

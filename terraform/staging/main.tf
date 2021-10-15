@@ -45,7 +45,7 @@ data "aws_ssm_parameter" "tenure_sns_topic_arn" {
 }
 
 data "aws_ssm_parameter" "accounts_sns_topic_arn" {
-  name = "/sns-topic/development/accounts/arn"
+  name = "/sns-topic/staging/accounts/arn"
 }
 
 # This is the definition of the dead letter queue used whem message processsing fails for a given message

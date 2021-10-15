@@ -18,7 +18,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         private readonly TenureApiFixture _tenureApiFixture;
         private readonly AccountApiFixture _accountApiFixture;
 
-        private readonly AccountCreatedUseCaseSteps _steps;
+        private readonly AccountCreatedSteps _steps;
 
         public AccountCreatedUpdatesPersonTenureTests(AwsIntegrationTests dbFixture)
         {
@@ -28,7 +28,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             _tenureApiFixture = new TenureApiFixture();
             _accountApiFixture = new AccountApiFixture();
 
-            _steps = new AccountCreatedUseCaseSteps();
+            _steps = new AccountCreatedSteps();
         }
 
         public void Dispose()
