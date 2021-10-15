@@ -1,5 +1,5 @@
-using AssetInformationListener.Boundary;
 using AssetInformationListener.UseCase.Interfaces;
+using Hackney.Core.Sns;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -19,6 +19,11 @@ namespace AssetInformationListener.Factories
                 case EventTypes.TenureUpdatedEvent:
                     {
                         processor = serviceProvider.GetService<IUpdateAssetWithTenureDetails>();
+                        break;
+                    }
+                case EventTypes.AccountCreatedEvent:
+                    {
+                        processor = serviceProvider.GetService<IUpdateAccountDetailsOnAssetTenure>();
                         break;
                     }
 

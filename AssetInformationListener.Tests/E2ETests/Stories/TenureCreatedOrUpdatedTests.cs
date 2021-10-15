@@ -53,7 +53,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureDoesNotExist(tenureId))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId))
-                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
                 .Then(t => _steps.ThenATenureNotFoundExceptionIsThrown(tenureId))
                 .BDDfy();
         }
@@ -63,10 +63,10 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         {
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
-                .And(h => _assetFixture.GivenAnAssetDoesNotExist(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .And(h => _assetFixture.GivenAnAssetDoesNotExist(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId))
-                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
-                .Then(t => _steps.ThenAnAssetNotFoundExceptionIsThrown(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenAnAssetNotFoundExceptionIsThrown(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .BDDfy();
         }
 
@@ -75,11 +75,11 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         {
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
-                .And(h => _assetFixture.GivenAnAssetExists(TenureApiFixture.TenureResponse.TenuredAsset.Id))
+                .And(h => _assetFixture.GivenAnAssetExists(_tenureApiFixture.ResponseObject.TenuredAsset.Id))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureCreatedEvent))
-                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
-                .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
-                                                                         TenureResponse, _dbFixture.DynamoDbContext))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, _tenureApiFixture.ResponseObject,
+                                                                         _dbFixture.DynamoDbContext))
                 .BDDfy();
         }
 
@@ -88,11 +88,11 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         {
             var tenureId = Guid.NewGuid();
             this.Given(g => _tenureApiFixture.GivenTheTenureExists(tenureId))
-                .And(h => _assetFixture.GivenAnAssetExistsWithTenureInfo(TenureApiFixture.TenureResponse))
+                .And(h => _assetFixture.GivenAnAssetExistsWithTenureInfo(_tenureApiFixture.ResponseObject))
                 .When(w => _steps.WhenTheFunctionIsTriggered(tenureId, EventTypes.TenureUpdatedEvent))
-                .Then(t => _steps.ThenTheCorrleationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationId))
-                .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, TenureApiFixture.
-                                                                         TenureResponse, _dbFixture.DynamoDbContext))
+                .Then(t => _steps.ThenTheCorrelationIdWasUsedInTheApiCall(_tenureApiFixture.ReceivedCorrelationIds))
+                .Then(t => _steps.ThenTheAssetIsUpdatedWithTheTenureInfo(_assetFixture.DbAsset, _tenureApiFixture.ResponseObject,
+                                                                         _dbFixture.DynamoDbContext))
                 .BDDfy();
         }
     }
