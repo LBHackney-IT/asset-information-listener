@@ -1,6 +1,6 @@
 using Amazon.DynamoDBv2.DataModel;
-using AssetInformationListener.Infrastructure;
 using AutoFixture;
+using Hackney.Shared.Asset.Infrastructure;
 using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 

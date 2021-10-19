@@ -1,4 +1,3 @@
-using AssetInformationListener.Domain;
 using AssetInformationListener.Domain.Account;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.Infrastructure.Exceptions;
@@ -6,6 +5,7 @@ using AssetInformationListener.UseCase;
 using AutoFixture;
 using FluentAssertions;
 using Hackney.Core.Sns;
+using Hackney.Shared.Asset.Domain;
 using Hackney.Shared.Tenure.Boundary.Response;
 using Hackney.Shared.Tenure.Domain;
 using Moq;
@@ -28,7 +28,6 @@ namespace AssetInformationListener.Tests.UseCase
         private readonly AccountResponseObject _account;
         private readonly TenureResponseObject _tenure;
         private readonly Asset _asset;
-
         private readonly Fixture _fixture;
         private static readonly Guid _correlationId = Guid.NewGuid();
         private const string DateTimeFormat = "yyyy-MM-ddTHH\\:mm\\:ss.fffffffZ";

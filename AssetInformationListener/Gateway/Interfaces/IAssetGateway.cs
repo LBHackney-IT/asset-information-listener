@@ -1,4 +1,4 @@
-using AssetInformationListener.Domain;
+using Hackney.Shared.Asset.Domain;
 using System;
 using System.Threading.Tasks;
 
