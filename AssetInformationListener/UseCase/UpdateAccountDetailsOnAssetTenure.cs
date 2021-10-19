@@ -5,6 +5,7 @@ using AssetInformationListener.Infrastructure.Exceptions;
 using AssetInformationListener.UseCase.Interfaces;
 using Hackney.Core.Logging;
 using Hackney.Core.Sns;
+using Hackney.Shared.Asset.Domain;
 using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 using System.Threading.Tasks;
