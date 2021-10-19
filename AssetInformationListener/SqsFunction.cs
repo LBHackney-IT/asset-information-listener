@@ -1,6 +1,5 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
-using AssetInformationListener.Boundary;
 using AssetInformationListener.Factories;
 using AssetInformationListener.Gateway;
 using AssetInformationListener.Gateway.Interfaces;
@@ -8,6 +7,7 @@ using AssetInformationListener.UseCase;
 using AssetInformationListener.UseCase.Interfaces;
 using Hackney.Core.DynamoDb;
 using Hackney.Core.Logging;
+using Hackney.Core.Sns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -44,9 +44,15 @@ namespace AssetInformationListener
 
             services.AddHttpClient();
             services.AddScoped<IUpdateAssetWithTenureDetails, UpdateAssetWithTenureDetails>();
+            services.AddScoped<IUpdateAccountDetailsOnAssetTenure, UpdateAccountDetailsOnAssetTenure>();
 
             services.AddScoped<IAssetGateway, DynamoDbAssetGateway>();
             services.AddScoped<ITenureInfoApiGateway, TenureInfoApiGateway>();
+            services.AddScoped<IAccountApi, AccountApi>();
+
+            // Transient because otherwise all gateway's that use it will get the same instance,
+            // which is not the desired result.
+            services.AddTransient<IApiGateway, ApiGateway>();
 
             base.ConfigureServices(services);
         }

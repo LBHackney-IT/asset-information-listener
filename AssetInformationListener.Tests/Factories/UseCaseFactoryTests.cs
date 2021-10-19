@@ -1,8 +1,8 @@
-using AssetInformationListener.Boundary;
 using AssetInformationListener.Factories;
 using AssetInformationListener.UseCase.Interfaces;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Sns;
 using Moq;
 using System;
 using Xunit;
@@ -70,6 +70,13 @@ namespace AssetInformationListener.Tests.Factories
         {
             _event = ConstructEvent(eventType);
             TestMessageProcessingCreation<IUpdateAssetWithTenureDetails>(_event);
+        }
+
+        [Fact]
+        public void CreateUseCaseForMessageTestAccountCreatedEvent()
+        {
+            _event = ConstructEvent(EventTypes.AccountCreatedEvent);
+            TestMessageProcessingCreation<IUpdateAccountDetailsOnAssetTenure>(_event);
         }
     }
 }

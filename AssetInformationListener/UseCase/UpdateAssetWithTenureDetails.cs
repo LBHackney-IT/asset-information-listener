@@ -1,8 +1,10 @@
-using AssetInformationListener.Boundary;
 using AssetInformationListener.Domain;
+using AssetInformationListener.Domain.Account;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.Infrastructure.Exceptions;
 using AssetInformationListener.UseCase.Interfaces;
+using Hackney.Core.Sns;
+using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 using System.Threading.Tasks;
 
@@ -26,13 +28,13 @@ namespace AssetInformationListener.UseCase
             // 1. Get Tenure from Tenure service API
             var tenure = await _tenureInfoApi.GetTenureInfoByIdAsync(message.EntityId, message.CorrelationId)
                                              .ConfigureAwait(false);
-            if (tenure is null) throw new TenureNotFoundException(message.EntityId);
+            if (tenure is null) throw new EntityNotFoundException<TenureResponseObject>(message.EntityId);
 
             // 2. Get the asset
             var assetId = tenure.TenuredAsset.Id;
             var asset = await _gateway.GetAssetByIdAsync(assetId)
                                       .ConfigureAwait(false);
-            if (asset is null) throw new AssetNotFoundException(assetId);
+            if (asset is null) throw new EntityNotFoundException<Asset>(assetId);
 
             // 3. Update the asset with the tenure details
             asset.Tenure = new AssetTenure

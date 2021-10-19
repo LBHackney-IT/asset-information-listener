@@ -1,4 +1,4 @@
-using AssetInformationListener.Domain.Tenure;
+using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 using System.Threading.Tasks;
 
