@@ -1,10 +1,8 @@
-namespace AssetInformationListener.Domain.Tenure
+namespace AssetInformationListener.Domain.Account
 {
-
-    public class TenureType
+    public class AccountTenureType
     {
         public string Code { get; set; }
-
         public string Description { get; set; }
     }
 }

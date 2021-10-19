@@ -1,105 +1,35 @@
-using AssetInformationListener.Domain.Tenure;
 using AutoFixture;
+using Hackney.Core.Sns;
+using Hackney.Core.Testing.Shared.E2E;
+using Hackney.Shared.Tenure.Boundary.Response;
 using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace AssetInformationListener.Tests.E2ETests.Fixtures
 {
-    public class TenureApiFixture : IDisposable
+    public class TenureApiFixture : BaseApiFixture<TenureResponseObject>
     {
         private readonly Fixture _fixture = new Fixture();
-        private readonly JsonSerializerOptions _jsonOptions;
-        private static HttpListener _httpListener;
-        public static TenureResponseObject TenureResponse { get; private set; }
+        private const string TenureApiRoute = "http://localhost:5678/api/v1/";
+        private const string TenureApiToken = "sdjkhfgsdkjfgsdjfgh";
 
-        public static string TenureApiRoute => "http://localhost:5678/api/v1/";
-        public static string TenureApiToken => "sdjkhfgsdkjfgsdjfgh";
+        public Guid RemovedPersonId { get; private set; }
+        public EventData MessageEventData { get; private set; }
 
         public string ReceivedCorrelationId { get; private set; }
 
         public TenureApiFixture()
-        {
-            _jsonOptions = CreateJsonOptions();
-            StartTenureApiStub();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private bool _disposed;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                if (_httpListener.IsListening)
-                    _httpListener.Stop();
-                TenureResponse = null;
-
-                _disposed = true;
-            }
-        }
-
-        private JsonSerializerOptions CreateJsonOptions()
-        {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            };
-            options.Converters.Add(new JsonStringEnumConverter());
-            return options;
-        }
-
-        private void StartTenureApiStub()
+            : base(TenureApiRoute, TenureApiToken)
         {
             Environment.SetEnvironmentVariable("TenureApiUrl", TenureApiRoute);
             Environment.SetEnvironmentVariable("TenureApiToken", TenureApiToken);
-            ReceivedCorrelationId = null;
+        }
 
-            Task.Run(() =>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
             {
-                _httpListener = new HttpListener();
-                _httpListener.Prefixes.Add(TenureApiRoute);
-                _httpListener.Start();
-
-                // GetContext method blocks while waiting for a request. 
-                HttpListenerContext context = _httpListener.GetContext();
-                HttpListenerResponse response = context.Response;
-
-                if (context.Request.Headers["Authorization"] != TenureApiToken)
-                {
-                    response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                }
-                else
-                {
-                    ReceivedCorrelationId = context.Request.Headers["x-correlation-id"];
-
-                    response.StatusCode = (int) ((TenureResponse is null) ? HttpStatusCode.NotFound : HttpStatusCode.OK);
-                    string responseBody = string.Empty;
-                    if (TenureResponse is null)
-                    {
-                        responseBody = context.Request.Url.Segments.Last();
-                    }
-                    else
-                    {
-                        responseBody = JsonSerializer.Serialize(TenureResponse, _jsonOptions);
-                    }
-                    Stream stream = response.OutputStream;
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        writer.Write(responseBody);
-                        writer.Close();
-                    }
-                }
-            });
+                base.Dispose(disposing);
+            }
         }
 
         public void GivenTheTenureDoesNotExist(Guid id)
@@ -109,10 +39,10 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
 
         public TenureResponseObject GivenTheTenureExists(Guid id)
         {
-            TenureResponse = _fixture.Build<TenureResponseObject>()
+            ResponseObject = _fixture.Build<TenureResponseObject>()
                                       .With(x => x.Id, id)
                                       .Create();
-            return TenureResponse;
+            return ResponseObject;
         }
     }
 }

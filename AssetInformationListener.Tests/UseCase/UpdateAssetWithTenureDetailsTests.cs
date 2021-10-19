@@ -1,11 +1,11 @@
-using AssetInformationListener.Boundary;
 using AssetInformationListener.Domain;
-using AssetInformationListener.Domain.Tenure;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.Infrastructure.Exceptions;
 using AssetInformationListener.UseCase;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Sns;
+using Hackney.Shared.Tenure.Boundary.Response;
 using Moq;
 using System;
 using System.Threading.Tasks;
@@ -87,7 +87,7 @@ namespace AssetInformationListener.Tests.UseCase
                                        .ReturnsAsync((TenureResponseObject) null);
 
             Func<Task> func = async () => await _sut.ProcessMessageAsync(_message).ConfigureAwait(false);
-            func.Should().ThrowAsync<TenureNotFoundException>();
+            func.Should().ThrowAsync<EntityNotFoundException<TenureResponseObject>>();
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace AssetInformationListener.Tests.UseCase
                         .ReturnsAsync((Asset) null);
 
             Func<Task> func = async () => await _sut.ProcessMessageAsync(_message).ConfigureAwait(false);
-            func.Should().ThrowAsync<TenureNotFoundException>();
+            func.Should().ThrowAsync<EntityNotFoundException<TenureResponseObject>>();
         }
 
         [Fact]
