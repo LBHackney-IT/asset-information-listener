@@ -40,8 +40,8 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
         public TenureResponseObject GivenTheTenureExists(Guid id)
         {
             ResponseObject = _fixture.Build<TenureResponseObject>()
-                                    .With(x => x.Id, id)
-                                    .Create();
+                                      .With(x => x.Id, id)
+                                      .Create();
             return ResponseObject;
         }
     }
