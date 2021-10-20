@@ -1,9 +1,9 @@
 using Amazon.DynamoDBv2.DataModel;
+using AssetInformationListener.Domain;
+using AssetInformationListener.Factories;
 using AssetInformationListener.Gateway.Interfaces;
+using AssetInformationListener.Infrastructure;
 using Hackney.Core.Logging;
-using Hackney.Shared.Asset.Domain;
-using Hackney.Shared.Asset.Factories;
-using Hackney.Shared.Asset.Infrastructure;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;

@@ -1,6 +1,9 @@
 using Amazon.DynamoDBv2.DataModel;
 using AutoFixture;
+using AssetInformationListener.Domain;
+using AssetInformationListener.Factories;
 using AssetInformationListener.Gateway;
+using AssetInformationListener.Infrastructure;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -8,9 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using Hackney.Shared.Asset.Domain;
-using Hackney.Shared.Asset.Infrastructure;
-using Hackney.Shared.Asset.Factories;
 
 namespace AssetInformationListener.Tests.Gateway
 {

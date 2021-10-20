@@ -1,10 +1,10 @@
+using AssetInformationListener.Domain;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.Infrastructure.Exceptions;
 using AssetInformationListener.UseCase;
 using AutoFixture;
 using FluentAssertions;
 using Hackney.Core.Sns;
-using Hackney.Shared.Asset.Domain;
 using Hackney.Shared.Tenure.Boundary.Response;
 using Moq;
 using System;
