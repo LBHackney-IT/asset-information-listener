@@ -41,16 +41,22 @@ namespace AssetInformationListener.Tests
 
         public MockApplicationFactory()
         {
-            CreateHostBuilder(null).Build();
+            EnsureEnvVarConfigured("DynamoDb_LocalMode", "true");
+            EnsureEnvVarConfigured("DynamoDb_LocalServiceUrl", "http://localhost:8000");
+
+            CreateHostBuilder().Build();
         }
 
-        public IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        private static void EnsureEnvVarConfigured(string name, string defaultValue)
+        {
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(name)))
+                Environment.SetEnvironmentVariable(name, defaultValue);
+        }
+
+        public IHostBuilder CreateHostBuilder() => Host.CreateDefaultBuilder(null)
            .ConfigureAppConfiguration(b => b.AddEnvironmentVariables())
            .ConfigureServices((hostContext, services) =>
            {
-               EnsureEnvVarConfigured("DynamoDb_LocalMode", "true");
-               EnsureEnvVarConfigured("DynamoDb_LocalServiceUrl", "http://localhost:8000");
-
                services.ConfigureDynamoDB();
                services.ConfigureDynamoDbFixture();
 
@@ -61,11 +67,5 @@ namespace AssetInformationListener.Tests
                DynamoDbFixture = serviceProvider.GetRequiredService<IDynamoDbFixture>();
                DynamoDbFixture.EnsureTablesExist(_tables);
            });
-
-        private static void EnsureEnvVarConfigured(string name, string defaultValue)
-        {
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(name)))
-                Environment.SetEnvironmentVariable(name, defaultValue);
-        }
     }
 }
