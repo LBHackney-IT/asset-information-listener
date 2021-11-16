@@ -11,7 +11,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         AsA = "SQS Entity Listener",
         IWant = "a function to process the AccountCreated message",
         SoThat = "The correct details are set on the appropriate asset")]
-    [Collection("DynamoDb collection")]
+    [Collection("AppTest collection")]
     public class AccountCreatedUpdatesPersonTenureTests : IDisposable
     {
         private readonly IDynamoDbFixture _dbFixture;

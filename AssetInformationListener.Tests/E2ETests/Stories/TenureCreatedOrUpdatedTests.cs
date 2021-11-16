@@ -11,7 +11,7 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         AsA = "SQS Entity Listener",
         IWant = "a function to process the TenureCreated message",
         SoThat = "the asset is updated with correct details fromn the new tenure")]
-    [Collection("DynamoDb collection")]
+    [Collection("AppTest collection")]
     public class TenureCreatedOrUpdatedTests : IDisposable
     {
         private readonly IDynamoDbFixture _dbFixture;

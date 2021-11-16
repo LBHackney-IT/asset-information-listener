@@ -15,7 +15,7 @@ using Xunit;
 
 namespace AssetInformationListener.Tests.Gateway
 {
-    [Collection("DynamoDb collection")]
+    [Collection("AppTest collection")]
     public class DynamoDbAssetGatewayTests : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
