@@ -1,32 +1,32 @@
 using Amazon.DynamoDBv2.DataModel;
-using AutoFixture;
 using AssetInformationListener.Gateway;
+using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
+using Hackney.Core.Testing.Shared;
+using Hackney.Shared.Asset.Domain;
+using Hackney.Shared.Asset.Factories;
+using Hackney.Shared.Asset.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using Hackney.Shared.Asset.Domain;
-using Hackney.Shared.Asset.Infrastructure;
-using Hackney.Shared.Asset.Factories;
 
 namespace AssetInformationListener.Tests.Gateway
 {
-    [Collection("Aws collection")]
+    [Collection("AppTest collection")]
     public class DynamoDbAssetGatewayTests : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
         private readonly Mock<ILogger<DynamoDbAssetGateway>> _logger;
         private readonly DynamoDbAssetGateway _classUnderTest;
-        private AwsIntegrationTests _dbTestFixture;
-        private IDynamoDBContext DynamoDb => _dbTestFixture.DynamoDbContext;
-        private readonly List<Action> _cleanup = new List<Action>();
+        private readonly IDynamoDbFixture _dbFixture;
+        private IDynamoDBContext DynamoDb => _dbFixture.DynamoDbContext;
 
-        public DynamoDbAssetGatewayTests(AwsIntegrationTests dbTestFixture)
+        public DynamoDbAssetGatewayTests(MockApplicationFactory appFactory)
         {
-            _dbTestFixture = dbTestFixture;
+            _dbFixture = appFactory.DynamoDbFixture;
             _logger = new Mock<ILogger<DynamoDbAssetGateway>>();
             _classUnderTest = new DynamoDbAssetGateway(DynamoDb, _logger.Object);
         }
@@ -42,23 +42,13 @@ namespace AssetInformationListener.Tests.Gateway
         {
             if (disposing && !_disposed)
             {
-                foreach (var action in _cleanup)
-                    action();
-
-                if (_dbTestFixture != null)
-                {
-                    _dbTestFixture.Dispose();
-                    _dbTestFixture = null;
-                }
-
                 _disposed = true;
             }
         }
 
         private async Task InsertDatatoDynamoDB(Asset entity)
         {
-            await DynamoDb.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanup.Add(async () => await DynamoDb.DeleteAsync<AssetDb>(entity.Id).ConfigureAwait(false));
+            await _dbFixture.SaveEntityAsync(entity.ToDatabase()).ConfigureAwait(false);
         }
 
         private Asset ConstructAsset()
