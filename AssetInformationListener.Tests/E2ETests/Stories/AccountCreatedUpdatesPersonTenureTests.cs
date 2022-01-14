@@ -1,6 +1,5 @@
 using AssetInformationListener.Tests.E2ETests.Fixtures;
 using AssetInformationListener.Tests.E2ETests.Steps;
-using Hackney.Core.Testing.DynamoDb;
 using System;
 using TestStack.BDDfy;
 using Xunit;
@@ -11,21 +10,21 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         AsA = "SQS Entity Listener",
         IWant = "a function to process the AccountCreated message",
         SoThat = "The correct details are set on the appropriate asset")]
-    [Collection("AppTest collection")]
+    [Collection("Aws collection")]
     public class AccountCreatedUpdatesPersonTenureTests : IDisposable
     {
-        private readonly IDynamoDbFixture _dbFixture;
+        private readonly AwsIntegrationTests _dbFixture;
         private readonly AssetFixture _assetFixture;
         private readonly TenureApiFixture _tenureApiFixture;
         private readonly AccountApiFixture _accountApiFixture;
 
         private readonly AccountCreatedSteps _steps;
 
-        public AccountCreatedUpdatesPersonTenureTests(MockApplicationFactory appFactory)
+        public AccountCreatedUpdatesPersonTenureTests(AwsIntegrationTests dbFixture)
         {
-            _dbFixture = appFactory.DynamoDbFixture;
+            _dbFixture = dbFixture;
 
-            _assetFixture = new AssetFixture(_dbFixture);
+            _assetFixture = new AssetFixture(_dbFixture.DynamoDbContext);
             _tenureApiFixture = new TenureApiFixture();
             _accountApiFixture = new AccountApiFixture();
 

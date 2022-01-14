@@ -1,6 +1,5 @@
 using AssetInformationListener.Tests.E2ETests.Fixtures;
 using AssetInformationListener.Tests.E2ETests.Steps;
-using Hackney.Core.Testing.DynamoDb;
 using System;
 using TestStack.BDDfy;
 using Xunit;
@@ -11,20 +10,20 @@ namespace AssetInformationListener.Tests.E2ETests.Stories
         AsA = "SQS Entity Listener",
         IWant = "a function to process the TenureCreated message",
         SoThat = "the asset is updated with correct details fromn the new tenure")]
-    [Collection("AppTest collection")]
+    [Collection("Aws collection")]
     public class TenureCreatedOrUpdatedTests : IDisposable
     {
-        private readonly IDynamoDbFixture _dbFixture;
+        private readonly AwsIntegrationTests _dbFixture;
         private readonly AssetFixture _assetFixture;
         private readonly TenureApiFixture _tenureApiFixture;
 
         private readonly TenureCreatedOrUpdatedSteps _steps;
 
-        public TenureCreatedOrUpdatedTests(MockApplicationFactory appFactory)
+        public TenureCreatedOrUpdatedTests(AwsIntegrationTests dbFixture)
         {
-            _dbFixture = appFactory.DynamoDbFixture;
+            _dbFixture = dbFixture;
 
-            _assetFixture = new AssetFixture(_dbFixture);
+            _assetFixture = new AssetFixture(_dbFixture.DynamoDbContext);
             _tenureApiFixture = new TenureApiFixture();
 
             _steps = new TenureCreatedOrUpdatedSteps();

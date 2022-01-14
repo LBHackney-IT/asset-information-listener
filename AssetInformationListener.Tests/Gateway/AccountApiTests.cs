@@ -3,7 +3,6 @@ using AssetInformationListener.Gateway;
 using AssetInformationListener.Gateway.Interfaces;
 using AutoFixture;
 using FluentAssertions;
-using Hackney.Core.Http;
 using Moq;
 using System;
 using System.Threading.Tasks;

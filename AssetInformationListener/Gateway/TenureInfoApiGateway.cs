@@ -1,5 +1,4 @@
 using AssetInformationListener.Gateway.Interfaces;
-using Hackney.Core.Http;
 using Hackney.Core.Logging;
 using Hackney.Shared.Tenure.Boundary.Response;
 using System;

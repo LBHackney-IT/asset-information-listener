@@ -1,6 +1,6 @@
+using Amazon.DynamoDBv2.DataModel;
+using AssetInformationListener.Infrastructure;
 using AutoFixture;
-using Hackney.Core.Testing.DynamoDb;
-using Hackney.Shared.Asset.Infrastructure;
 using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 
@@ -9,15 +9,16 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
     public class AssetFixture : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
+        private const string DateFormat = "yyyy-MM-ddTHH\\:mm\\:ss.fffffffZ";
 
-        private readonly IDynamoDbFixture _dbFixture;
+        private readonly IDynamoDBContext _dbContext;
 
         public AssetDb DbAsset { get; private set; }
         public Guid AssetDbId { get; private set; }
 
-        public AssetFixture(IDynamoDbFixture dbFixture)
+        public AssetFixture(IDynamoDBContext dbContext)
         {
-            _dbFixture = dbFixture;
+            _dbContext = dbContext;
         }
 
         public void Dispose()
@@ -31,6 +32,9 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
         {
             if (disposing && !_disposed)
             {
+                if (null != DbAsset)
+                    _dbContext.DeleteAsync<AssetDb>(DbAsset.Id).GetAwaiter().GetResult();
+
                 _disposed = true;
             }
         }
@@ -43,7 +47,7 @@ namespace AssetInformationListener.Tests.E2ETests.Fixtures
 
         private AssetDb SaveAssetDb(AssetDb dbEntity)
         {
-            _dbFixture.SaveEntityAsync<AssetDb>(dbEntity).GetAwaiter().GetResult();
+            _dbContext.SaveAsync<AssetDb>(dbEntity).GetAwaiter().GetResult();
             dbEntity.VersionNumber = 0;
             return dbEntity;
         }
