@@ -4,6 +4,9 @@ using AssetInformationListener.Factories;
 using AssetInformationListener.Infrastructure;
 using FluentAssertions;
 using Xunit;
+using Hackney.Shared.Asset.Infrastructure;
+using Hackney.Shared.Asset.Factories;
+using Hackney.Shared.Asset.Domain;
 
 namespace AssetInformationListener.Tests.Factories
 {
