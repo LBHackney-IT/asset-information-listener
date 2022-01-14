@@ -1,8 +1,8 @@
 using Amazon.DynamoDBv2.DataModel;
-using AssetInformationListener.Domain;
-using AssetInformationListener.Infrastructure;
 using AssetInformationListener.Infrastructure.Exceptions;
 using FluentAssertions;
+using Hackney.Shared.Asset.Domain;
+using Hackney.Shared.Asset.Infrastructure;
 using Hackney.Shared.Tenure.Boundary.Response;
 using System;
 using System.Threading.Tasks;

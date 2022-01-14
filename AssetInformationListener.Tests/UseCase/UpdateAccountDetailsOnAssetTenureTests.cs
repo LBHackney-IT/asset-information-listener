@@ -1,4 +1,3 @@
-using AssetInformationListener.Domain;
 using AssetInformationListener.Domain.Account;
 using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.Infrastructure.Exceptions;
@@ -6,6 +5,7 @@ using AssetInformationListener.UseCase;
 using AutoFixture;
 using FluentAssertions;
 using Hackney.Core.Sns;
+using Hackney.Shared.Asset.Domain;
 using Hackney.Shared.Tenure.Boundary.Response;
 using Hackney.Shared.Tenure.Domain;
 using Moq;
@@ -13,6 +13,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+
 
 namespace AssetInformationListener.Tests.UseCase
 {
