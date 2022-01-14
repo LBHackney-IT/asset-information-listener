@@ -6,6 +6,7 @@ using AssetInformationListener.Gateway.Interfaces;
 using AssetInformationListener.UseCase;
 using AssetInformationListener.UseCase.Interfaces;
 using Hackney.Core.DynamoDb;
+using Hackney.Core.Http;
 using Hackney.Core.Logging;
 using Hackney.Core.Sns;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,9 +51,7 @@ namespace AssetInformationListener
             services.AddScoped<ITenureInfoApiGateway, TenureInfoApiGateway>();
             services.AddScoped<IAccountApi, AccountApi>();
 
-            // Transient because otherwise all gateway's that use it will get the same instance,
-            // which is not the desired result.
-            services.AddTransient<IApiGateway, ApiGateway>();
+            services.AddApiGateway();
 
             base.ConfigureServices(services);
         }

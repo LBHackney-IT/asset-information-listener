@@ -1,5 +1,6 @@
 using AssetInformationListener.Domain.Account;
 using AssetInformationListener.Gateway.Interfaces;
+using Hackney.Core.Http;
 using Hackney.Core.Logging;
 using System;
 using System.Threading.Tasks;
