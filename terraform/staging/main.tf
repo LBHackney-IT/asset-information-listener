@@ -151,7 +151,7 @@ data "aws_sns_topic" "dlq_alarm_topic" {
  
 # CloudWatch Alarm for DLQ NumberOfMessagesReceived
 resource "aws_cloudwatch_metric_alarm" "dlq_alarm" {
-  alarm_name          = "DLQ_Alarm_${aws_sqs_queue.mtfh_reporting_data_dead_letter_queue.name}_${var.environment_name}"
+  alarm_name          = "DLQ_Alarm_${aws_sqs_queue.asset_dead_letter_queue.name}_${var.environment_name}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "NumberOfMessagesReceived"
@@ -161,7 +161,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_alarm" {
   threshold           = 1  # Trigger if 1 or more messages are received
 
   dimensions = {
-    QueueName = aws_sqs_queue.mtfh_reporting_data_dead_letter_queue.name
+    QueueName = aws_sqs_queue.asset_dead_letter_queue.name
   }
 
     alarm_description = "Alarm for when messages are sent to the Dead Letter Queue"
