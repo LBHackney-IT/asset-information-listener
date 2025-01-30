@@ -26,4 +26,4 @@ COPY . .
 RUN dotnet build -c Release -o out AssetInformationListener/AssetInformationListener.csproj
 RUN dotnet build -c debug -o out AssetInformationListener.Tests/AssetInformationListener.Tests.csproj
 
-CMD dotnet test
+ENTRYPOINT ["dotnet", "test", "--collect", "XPlat Code Coverage;Format=opencover", "--results-directory", "./coverage"]
