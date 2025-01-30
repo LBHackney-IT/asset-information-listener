@@ -253,9 +253,16 @@ workflows:
       - terraform-compliance-development:
           requires:
             - terraform-init-and-plan-development
-      - terraform-apply-development:
+      - permit-development-release:
+          type: approval
           requires:
             - terraform-compliance-development
+          filters:
+            branches:
+              only: master
+      - terraform-apply-development:
+          requires:
+            - permit-development-release
           filters:
             branches:
               only: master
