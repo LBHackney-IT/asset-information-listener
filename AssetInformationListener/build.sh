@@ -8,7 +8,7 @@ then
 fi
 
 #dotnet restore
-dotnet tool install --global Amazon.Lambda.Tools --version 5.4.5
+dotnet tool install --global Amazon.Lambda.Tools
 
 
 # (for CI) ensure that the newly-installed tools are on PATH
