@@ -3,11 +3,12 @@ version: 2.1
 orbs:
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
   sonarcloud: sonarsource/sonarcloud@2.0.0
+  node: circleci/node@6.3.0
 
 executors:
   docker-python:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.12
   docker-terraform:
     docker:
       - image: "hashicorp/terraform:1.1.9"
@@ -124,14 +125,10 @@ commands:
       - *attach_workspace
       - checkout
       - setup_remote_docker
-      - run:
-          name: Install Node.js
-          command: |
-            curl -sL https://deb.nodesource.com/setup_20.x | bash -
-            apt-get update && apt-get install -y nodejs
+      - node/install
       - run:
           name: Install serverless CLI
-          command: npm i -g serverless@^3
+          command: npm i -g serverless
       - run:
           name: Build lambda
           command: |
@@ -162,10 +159,10 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker-compose build asset-information-listener-test
+          command: docker compose build asset-information-listener-test
       - run:
           name: Run tests
-          command: docker-compose run asset-information-listener-test
+          command: docker compose run asset-information-listener-test
       - run:
           name: Report
           command: |
@@ -345,7 +342,9 @@ workflows:
           requires:
             - permit-development-release
       - deploy-to-development:
-          context: api-nuget-token-context
+          context:
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - terraform-apply-development
   staging-and-production:
@@ -385,7 +384,9 @@ workflows:
             branches:
               only: release
       - deploy-to-staging:
-          context: api-nuget-token-context
+          context:
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - terraform-apply-staging
           filters:
@@ -432,7 +433,9 @@ workflows:
             branches:
               only: release
       - deploy-to-production:
-          context: api-nuget-token-context
+          context:
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - permit-production-release
           filters:

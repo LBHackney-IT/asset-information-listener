@@ -1,5 +1,3 @@
-version: "3.2"
-
 services:
   asset-information-listener:
     image: asset-information-listener
