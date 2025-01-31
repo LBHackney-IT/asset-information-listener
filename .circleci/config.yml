@@ -159,10 +159,10 @@ jobs:
       - setup_remote_docker
       - run:
           name: build
-          command: docker-compose build asset-information-listener-test
+          command: docker compose build asset-information-listener-test
       - run:
           name: Run tests
-          command: docker-compose run asset-information-listener-test
+          command: docker compose run asset-information-listener-test
       - run:
           name: Report
           command: |
