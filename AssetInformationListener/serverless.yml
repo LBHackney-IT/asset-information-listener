@@ -134,6 +134,8 @@ custom:
         - subnet-0140d06fb84fdb547
         - subnet-05ce390ba88c42bfd
     staging:
+      securityGroupIds:
+        - sg-0104c0c55226675ed
       subnetIds:
         - subnet-06d3de1bd9181b0d7
         - subnet-0ed7d7713d1127656
