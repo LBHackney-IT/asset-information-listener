@@ -8,7 +8,7 @@ then
 fi
 
 #dotnet restore
-dotnet tool install --global Amazon.Lambda.Tools --version 5.4.5
+dotnet tool install --global Amazon.Lambda.Tools
 
 
 # (for CI) ensure that the newly-installed tools are on PATH
@@ -18,4 +18,4 @@ then
 fi
 
 dotnet restore
-dotnet lambda package --configuration release --framework net6.0 --output-package ./bin/release/net6.0/asset-information-listener.zip
+dotnet lambda package --configuration release --framework net8.0 --output-package ./bin/release/net8.0/asset-information-listener.zip

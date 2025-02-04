@@ -1,7 +1,7 @@
 service: asset-information-listener
 provider:
   name: aws
-  runtime: dotnet6
+  runtime: dotnet8
   memorySize: 2048
   tracing:
     lambda: true
@@ -11,7 +11,7 @@ provider:
   region: eu-west-2
 
 package:
-  artifact: ./bin/release/net6.0/asset-information-listener.zip
+  artifact: ./bin/release/net8.0/asset-information-listener.zip
 
 functions:
   AssetInformationListener:
@@ -128,9 +128,11 @@ resources:
 custom:
   vpc:
     development:
+      securityGroupIds:
+        - sg-075dbb441855328ee
       subnetIds:
-        - subnet-0deabb5d8fb9c3446
-        - subnet-000b89c249f12a8ad
+        - subnet-0140d06fb84fdb547
+        - subnet-05ce390ba88c42bfd
     staging:
       subnetIds:
         - subnet-06d3de1bd9181b0d7
