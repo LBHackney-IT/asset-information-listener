@@ -427,7 +427,7 @@ workflows:
       - assume-role-production:
           context: api-assume-role-disaster-recovery-context
           requires:
-              - permit-production-terraform-dr-testing
+              - permit-production-terraform-release
           filters:
              branches:
                only: dr-testing
@@ -462,7 +462,7 @@ workflows:
             - api-nuget-token-context
             - "Serverless Framework"
           requires:
-            - permit-production-dr-testing
+            - permit-production-release
           filters:
             branches:
               only: dr-testing
