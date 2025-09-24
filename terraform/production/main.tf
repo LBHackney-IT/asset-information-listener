@@ -30,7 +30,7 @@ locals {
 
 terraform {
   backend "s3" {
-    bucket  = "terraform-state-housing-production"
+    bucket  = "terraform-state-disaster-recovery"
     encrypt = true
     region  = "eu-west-2"
     key     = "services/asset-information-listener/state"
@@ -39,7 +39,7 @@ terraform {
 
 data "aws_vpc" "housing_production_vpc" {
   tags = {
-    Name = "housing-prod"
+    Name = "disaster-recovery-prod"
   }
 }
 
@@ -53,13 +53,13 @@ module "asset_listener_sg" {
 # This is the parameter containing the arn of the topic to which we want to subscribe
 # This will have been created by the service the generates the events in which we are interested
 
-data "aws_ssm_parameter" "tenure_sns_topic_arn" {
-  name = "/sns-topic/production/tenure/arn"
-}
-
-data "aws_ssm_parameter" "accounts_sns_topic_arn" {
-  name = "/sns-topic/production/accounts/arn"
-}
+# data "aws_ssm_parameter" "tenure_sns_topic_arn" {
+#   name = "/sns-topic/production/tenure/arn"
+# }
+#
+# data "aws_ssm_parameter" "accounts_sns_topic_arn" {
+#   name = "/sns-topic/production/accounts/arn"
+# }
 
 # This is the definition of the dead letter queue used whem message processsing fails for a given message
 
@@ -67,7 +67,7 @@ resource "aws_sqs_queue" "asset_dead_letter_queue" {
   name                              = "assetdeadletterqueue.fifo"
   fifo_queue                        = true
   content_based_deduplication       = true
-  kms_master_key_id                 = "alias/housing-production-cmk"
+  kms_master_key_id                 = "alias/local-backup-key"
   kms_data_key_reuse_period_seconds = 300
 }
 
@@ -78,7 +78,7 @@ resource "aws_sqs_queue" "asset_queue" {
   name                              = "assetqueue.fifo"
   fifo_queue                        = true
   content_based_deduplication       = true
-  kms_master_key_id                 = "alias/housing-production-cmk" # This is a custom key
+  kms_master_key_id                 = "alias/local-backup-key" # This is a custom key
   kms_data_key_reuse_period_seconds = 300
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.asset_dead_letter_queue.arn,
@@ -106,7 +106,7 @@ resource "aws_sqs_queue_policy" "asset_queue_policy" {
                   "aws:SourceArn": "${data.aws_ssm_parameter.tenure_sns_topic_arn.value}"
               }
               }
-          },          
+          },
           {
               "Sid": "Second",
               "Effect": "Allow",
@@ -126,19 +126,19 @@ resource "aws_sqs_queue_policy" "asset_queue_policy" {
 
 # This is the subscription definition that tells the topic which queue to use
 
-resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_tenure_sns" {
-  topic_arn            = data.aws_ssm_parameter.tenure_sns_topic_arn.value
-  protocol             = "sqs"
-  endpoint             = aws_sqs_queue.asset_queue.arn
-  raw_message_delivery = true
-}
-
-resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_accounts_sns" {
-  topic_arn            = data.aws_ssm_parameter.accounts_sns_topic_arn.value
-  protocol             = "sqs"
-  endpoint             = aws_sqs_queue.asset_queue.arn
-  raw_message_delivery = true
-}
+# resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_tenure_sns" {
+#   topic_arn            = data.aws_ssm_parameter.tenure_sns_topic_arn.value
+#   protocol             = "sqs"
+#   endpoint             = aws_sqs_queue.asset_queue.arn
+#   raw_message_delivery = true
+# }
+#
+# resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_accounts_sns" {
+#   topic_arn            = data.aws_ssm_parameter.accounts_sns_topic_arn.value
+#   protocol             = "sqs"
+#   endpoint             = aws_sqs_queue.asset_queue.arn
+#   raw_message_delivery = true
+# }
 
 # This creates an AWS parameter with arn of the queue that will then be used within the Serverless.yml
 # to specify the queue that will trigger the lambda function.
@@ -149,38 +149,38 @@ resource "aws_ssm_parameter" "asset_sqs_queue_arn" {
   value = aws_sqs_queue.asset_queue.arn
 }
 
-module "asset_listener_cw_dashboard" {
-  source                     = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/cloudwatch/dashboards/listener-dashboard"
-  environment_name           = var.environment_name
-  listener_name              = "asset-information-listener"
-  sqs_queue_name             = aws_sqs_queue.asset_queue.name
-  sqs_dead_letter_queue_name = aws_sqs_queue.asset_dead_letter_queue.name
-}
-
-# Reference to the SNS Topic All_DLQ_Alarms_Topic - which will contain all the email subscriptions
-data "aws_sns_topic" "dlq_alarm_topic" {
-  name = "All_DLQ_Alarms_Topic"
-}
- 
-# CloudWatch Alarm for DLQ NumberOfMessagesReceived
-resource "aws_cloudwatch_metric_alarm" "dlq_alarm" {
-  alarm_name          = "DLQ_Alarm_${aws_sqs_queue.asset_dead_letter_queue.name}_${var.environment_name}"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "NumberOfMessagesReceived"
-  namespace           = "AWS/SQS"
-  period              = 300  # 5 minutes
-  statistic           = "Average"
-  threshold           = 1  # Trigger if 1 or more messages are received
-
-  dimensions = {
-    QueueName = aws_sqs_queue.asset_dead_letter_queue.name
-  }
-
-    alarm_description = "Alarm for when messages are sent to the Dead Letter Queue"
-    actions_enabled   = true
-
-    # Link the SNS Notifications Topic to the alarm's notification actions
-    alarm_actions          = [data.aws_sns_topic.dlq_alarm_topic.arn]
-    ok_actions             = [data.aws_sns_topic.dlq_alarm_topic.arn]
-}
+# module "asset_listener_cw_dashboard" {
+#   source                     = "github.com/LBHackney-IT/aws-hackney-common-terraform.git//modules/cloudwatch/dashboards/listener-dashboard"
+#   environment_name           = var.environment_name
+#   listener_name              = "asset-information-listener"
+#   sqs_queue_name             = aws_sqs_queue.asset_queue.name
+#   sqs_dead_letter_queue_name = aws_sqs_queue.asset_dead_letter_queue.name
+# }
+#
+# # Reference to the SNS Topic All_DLQ_Alarms_Topic - which will contain all the email subscriptions
+# data "aws_sns_topic" "dlq_alarm_topic" {
+#   name = "All_DLQ_Alarms_Topic"
+# }
+#
+# # CloudWatch Alarm for DLQ NumberOfMessagesReceived
+# resource "aws_cloudwatch_metric_alarm" "dlq_alarm" {
+#   alarm_name          = "DLQ_Alarm_${aws_sqs_queue.asset_dead_letter_queue.name}_${var.environment_name}"
+#   comparison_operator = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods  = 1
+#   metric_name         = "NumberOfMessagesReceived"
+#   namespace           = "AWS/SQS"
+#   period              = 300  # 5 minutes
+#   statistic           = "Average"
+#   threshold           = 1  # Trigger if 1 or more messages are received
+#
+#   dimensions = {
+#     QueueName = aws_sqs_queue.asset_dead_letter_queue.name
+#   }
+#
+#     alarm_description = "Alarm for when messages are sent to the Dead Letter Queue"
+#     actions_enabled   = true
+#
+#     # Link the SNS Notifications Topic to the alarm's notification actions
+#     alarm_actions          = [data.aws_sns_topic.dlq_alarm_topic.arn]
+#     ok_actions             = [data.aws_sns_topic.dlq_alarm_topic.arn]
+# }
