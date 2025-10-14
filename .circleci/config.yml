@@ -96,7 +96,7 @@ commands:
           name: apply
           command: |
             cd ./terraform/<<parameters.environment>>/
-            terraform remove -auto-approve plan.out
+            terraform destroy -auto-approve plan.out
       - persist_to_workspace:
           root: *workspace_root
           paths:
