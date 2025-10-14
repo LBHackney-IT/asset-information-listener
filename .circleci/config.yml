@@ -96,7 +96,7 @@ commands:
           name: apply
           command: |
             cd ./terraform/<<parameters.environment>>/
-            terraform apply -auto-approve plan.out
+            terraform remove -auto-approve plan.out
       - persist_to_workspace:
           root: *workspace_root
           paths:
@@ -139,7 +139,7 @@ commands:
           name: Deploy lambda
           command: |
             cd ./AssetInformationListener/
-            sls deploy --stage <<parameters.stage>> --conceal
+            sls remove --stage <<parameters.stage>> --conceal
 
 jobs:
   check-code-formatting:
