@@ -139,7 +139,7 @@ commands:
           name: Deploy lambda
           command: |
             cd ./AssetInformationListener/
-            sls remove --stage <<parameters.stage>> --conceal
+            sls remove --stage <<parameters.stage>>
 
 jobs:
   check-code-formatting:
