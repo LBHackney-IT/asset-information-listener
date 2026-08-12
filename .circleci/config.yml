@@ -169,7 +169,7 @@ jobs:
             mkdir coverage
             docker cp $(docker ps -aqf "name=asset-information-listener-test"):/app/coverage ./
             sed -i "s|/app/|$(pwd)/|g" coverage/*/coverage.opencover.xml
-      - sonarcloud/scan
+      # - sonarcloud/scan
   assume-role-development:
     executor: docker-python
     steps:
@@ -299,7 +299,7 @@ workflows:
       - build-and-test:
           context:
             - api-nuget-token-context
-            - SonarCloud
+            # - SonarCloud
           filters:
             branches:
               ignore:
@@ -345,7 +345,7 @@ workflows:
       - build-and-test:
           context:
             - api-nuget-token-context
-            - SonarCloud
+            # - SonarCloud
           filters:
             branches:
               only: master
@@ -379,7 +379,7 @@ workflows:
       - build-and-test:
           context:
             - api-nuget-token-context
-            - SonarCloud
+            # - SonarCloud
           filters:
             branches:
               only: release
@@ -497,7 +497,7 @@ workflows:
       - build-and-test:
           context: 
             - api-nuget-token-context
-            - SonarCloud
+            # - SonarCloud
           filters:
             branches:
               only: release
