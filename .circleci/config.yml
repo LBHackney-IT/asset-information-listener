@@ -140,6 +140,54 @@ commands:
           command: |
             cd ./AssetInformationListener/
             sls deploy --stage <<parameters.stage>> --conceal
+  remove-lambda:
+    description: "Removes a Serverless stack without building deployment artifacts"
+    parameters:
+      stage:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - node/install
+      - run:
+          name: Install Serverless Framework v4
+          command: npm install --global serverless@4
+      - run:
+          name: Remove Serverless stack
+          no_output_timeout: 45m
+          command: |
+            cd ./AssetInformationListener/
+            sls remove --stage <<parameters.stage>>
+  terraform-destroy-plan:
+    description: "Shows the Terraform destroy plan without saving an artifact"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          name: destroy plan
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+            terraform plan -destroy
+  terraform-destroy:
+    description: "Destroys Terraform-managed resources"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          name: destroy
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+            terraform destroy -auto-approve
 
 jobs:
   check-code-formatting:
@@ -285,6 +333,21 @@ jobs:
     steps:
       - deploy-lambda:
           stage: "pre-production"
+  remove-from-pre-production:
+    executor: docker-dotnet
+    steps:
+      - remove-lambda:
+          stage: "pre-production"
+  terraform-destroy-plan-pre-production:
+    executor: docker-terraform
+    steps:
+      - terraform-destroy-plan:
+          environment: "pre-production"
+  terraform-destroy-pre-production:
+    executor: docker-terraform
+    steps:
+      - terraform-destroy:
+          environment: "pre-production"
 
 workflows:
   feature:
@@ -513,4 +576,57 @@ workflows:
           - api-nuget-token-context
           - "Serverless Framework"
           requires:
-            - assume-role-pre-production        
+            - assume-role-pre-production
+
+  teardown-pre-production:
+    jobs:
+      - permit-pre-production-teardown:
+          type: approval
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - assume-role-pre-production:
+          context: api-assume-role-housing-pre-production-context
+          requires:
+            - permit-pre-production-teardown
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - remove-from-pre-production:
+          context: "Serverless Framework"
+          requires:
+            - assume-role-pre-production
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - terraform-destroy-plan-pre-production:
+          requires:
+            - remove-from-pre-production
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - permit-pre-production-terraform-destroy:
+          type: approval
+          requires:
+            - terraform-destroy-plan-pre-production
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
+      - terraform-destroy-pre-production:
+          requires:
+            - permit-pre-production-terraform-destroy
+          filters:
+            branches:
+              ignore:
+                - master
+                - release
