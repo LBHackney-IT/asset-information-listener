@@ -34,14 +34,8 @@ module "asset_listener_sg" {
   environment_name   = var.environment_name
 }
 
-data "aws_ssm_parameter" "tenure_sns_topic_arn" {
-  name = "/sns-topic/pre-production/tenure/arn"
-}
-
-data "aws_ssm_parameter" "accounts_sns_topic_arn" {
-  name = "/sns-topic/pre-production/accounts/arn"
-}
-
+# The tenure and accounts topic parameters have already been removed.
+# Their queue policy and subscriptions remain in state and are destroyed from there.
 resource "aws_sqs_queue" "asset_dead_letter_queue" {
   name                              = "assetdeadletterqueue.fifo"
   fifo_queue                        = true
@@ -60,56 +54,6 @@ resource "aws_sqs_queue" "asset_queue" {
     deadLetterTargetArn = aws_sqs_queue.asset_dead_letter_queue.arn,
     maxReceiveCount     = 3
   })
-}
-
-resource "aws_sqs_queue_policy" "asset_queue_policy" {
-  queue_url = aws_sqs_queue.asset_queue.id
-  policy    = <<POLICY
-  {
-      "Version": "2012-10-17",
-      "Id": "sqspolicy",
-      "Statement": [
-          {
-              "Sid": "First",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": "sqs:SendMessage",
-              "Resource": "${aws_sqs_queue.asset_queue.arn}",
-              "Condition": {
-              "ArnEquals": {
-                  "aws:SourceArn": "${data.aws_ssm_parameter.tenure_sns_topic_arn.value}"
-              }
-              }
-          },          
-          {
-              "Sid": "Second",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": "sqs:SendMessage",
-              "Resource": "${aws_sqs_queue.asset_queue.arn}",
-              "Condition": {
-              "ArnEquals": {
-                  "aws:SourceArn": "${data.aws_ssm_parameter.accounts_sns_topic_arn.value}"
-              }
-              }
-          }
-      ]
-  }
-  POLICY
-}
-
-resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_tenure_sns" {
-  topic_arn            = data.aws_ssm_parameter.tenure_sns_topic_arn.value
-  protocol             = "sqs"
-  endpoint             = aws_sqs_queue.asset_queue.arn
-  raw_message_delivery = true
-}
-
-resource "aws_sns_topic_subscription" "asset_queue_subscribe_to_accounts_sns" {
-  topic_arn            = data.aws_ssm_parameter.accounts_sns_topic_arn.value
-  protocol             = "sqs"
-  endpoint             = aws_sqs_queue.asset_queue.arn
-  raw_message_delivery = true
 }
 
 resource "aws_ssm_parameter" "asset_sqs_queue_arn" {
